@@ -1,0 +1,20 @@
+{
+    "python.testing.unittestArgs": [
+        "-v",
+        "-s",
+        ".",
+        "-p",
+        "test*.py"
+    ],
+    "python.testing.pytestEnabled": false,
+    "python.testing.unittestEnabled": true,
+    "files.associations": {
+        "etec3701_10x20.h": "c",
+        "serial.h": "c",
+        "utils.h": "c",
+        "interrupts.h": "c",
+        "memory.h": "c",
+        "pci.h": "c"
+    },
+    "C_Cpp.errorSquiggles": "disabled"
+}
