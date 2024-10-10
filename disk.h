@@ -66,6 +66,32 @@ struct VBR{
     u16 checksum;
 };
 
+struct DirEntry {
+    char base[8];
+    char ext[3];
+    u8 attributes;
+    u8 reserved;
+    u8 creationTimeCentiseconds;
+    u16 creationTime;
+    u16 creationDate;
+    u16 lastAccessDate;
+    u16 clusterHigh;
+    u16 lastModifiedTime;
+    u16 lastModifiedDate;
+    u16 clusterLow;
+    u32 size;
+};
+
+struct LFNEntry {
+    unsigned char sequenceNumber;
+    char name0[10];             //5 characters
+    char attribute;             //always 15
+    char zero;                  //always zero
+    char checksum;
+    char name1[12];             //6 characters
+    unsigned short alsozero;    //always zero
+    char name2[4];              //2 characters
+};
 #pragma pack(pop)
 
 static struct PhysicalRegionDescriptor* physicalRegionDescriptor;

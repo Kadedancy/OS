@@ -232,17 +232,19 @@ u32 clusterNumberToSectorNumber(u32 clustnum){
         panic("BAD CLUSTER NUMBER!!!!!!");
     }
     
-    u32 delta = vbr.first_sector + vbr.reserved_sectors + (vbr.sectors_per_cluster * 2);
-    return delta += (clustnum - 2) * vbr.sectors_per_cluster;
+    u32 delta = vbr.first_sector + vbr.reserved_sectors + (vbr.sectors_per_fat * 2);
+    delta += (clustnum - 2) * vbr.sectors_per_cluster;
+    return delta; 
 }
-static void read_root_callback( int errorcode,void* sectorData, void* kmain_callback){
+static void read_root_callback( int errorcode,void* sectorData, void* sectorNum){
     if( errorcode != SUCCESS ){
         kprintf("Cannot read Root Cluster: %d\n",errorcode);
         panic("Cannot continue");
         return;
     }
 
-    unsigned char* data = (unsigned char*) sectorData;
+    char* data = (char*) sectorData;
+
     for(int i = 0; i < 512; i++){
         kprintf("%c",data[i]);
     } 
@@ -252,5 +254,21 @@ static void read_root_callback( int errorcode,void* sectorData, void* kmain_call
 
 void do_this(){
     u32 sectorNum = clusterNumberToSectorNumber(vbr.root_cluster);
-    disk_read_sectors(sectorNum,1,read_root_callback,0);
+    disk_read_sectors(sectorNum,1,read_root_callback,(void*)sectorNum);
 }
+/*
+void listFiles(int errorcode, void* buffer, void* data){
+    if(errorcode != SUCCESS){
+        panic("AAAAAAAAAHHHHHHHHH!!!!!!!!!!!!!!")
+    }
+    struct DirEntry* de = (struct DirEntry*) buffer;
+    for(int i = 0; i < 128; i++){
+        if(de[i].base[0]== 0){
+            break;
+        }
+        char buff[13];
+        fileNameCheck(de,buff);
+        kprinf("%s", buffer);
+    }
+
+}*/

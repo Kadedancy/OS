@@ -1,6 +1,6 @@
  kernel
 
- Timestamp is 6705529a (Tue Oct  8 11:41:14 2024)
+ Timestamp is 6707e7ec (Thu Oct 10 10:42:52 2024)
 
  Preferred load address is 0000000000100000
 
@@ -144,21 +144,22 @@
  0002:000053e8       ??_C@_0CI@OEHIIMEF@Signature?5?$CIshould?5be?5?8EFI?5PART?8?$CJ@ 000000000010c3e8     testsuite.c.o
  0002:00005410       ??_C@_0BN@FLKBADPP@Kernel?5panic?3?5At?5eip?$DN?$CFp?3?5?$CFs?6?$AA@ 000000000010c410     interrupts.c.o
  0002:0000542d       ??_C@_0BG@DMELMCDE@Bad?5interrupt?5number?6?$AA@ 000000000010c42d     interrupts.c.o
- 0002:00005443       ??_C@_0BA@IOAINKNM@Divide?5by?5zero?6?$AA@ 000000000010c443     interrupts.c.o
- 0002:00005453       ??_C@_0CJ@DGFCJGDO@BUG?3?5disk_read_sectors?5with?5no?5c@ 000000000010c453     disk.c.o
- 0002:0000547c       ??_C@_0DE@NBPFEMAA@BUG?3?5Cannot?5dispatch?5when?5a?5requ@ 000000000010c47c     disk.c.o
- 0002:000054b0       ??_C@_0BA@FPKEGBPF@Illegal?5Opcode?6?$AA@ 000000000010c4b0     interrupts.c.o
- 0002:000054c0       ??_C@_0CC@LPPGPMAO@Warning?3?5Unhandled?5interrupt?3?5?$CFd@ 000000000010c4c0     interrupts.c.o
- 0002:000054e2       ??_C@_0BO@PPDAOKAG@Cannot?5read?5Root?5Cluster?3?5?$CFd?6?$AA@ 000000000010c4e2     disk.c.o
- 0002:00005500       ??_C@_0CB@HMGHNKGJ@Cannot?5read?5partition?5table?3?5?$CFd?6@ 000000000010c500     disk.c.o
- 0002:00005521       ??_C@_0L@NACIDDFB@ERROR?3?5?$CFd?6?$AA@ 000000000010c521     testsuite.c.o
- 0002:0000552c       ??_C@_0BF@NALIMPHK@Cannot?5read?5VBR?3?5?$CFd?6?$AA@ 000000000010c52c     disk.c.o
- 0002:00005541       ??_C@_06HCHMEBHM@START?6?$AA@ 000000000010c541     kmain.c.o
- 0002:00005548       ??_C@_0M@JCNEDAPF@AFTER?5READ?6?$AA@ 000000000010c548     testsuite.c.o
- 0002:00005554       ??_C@_0N@FJDDMCBC@BEFORE?5READ?6?$AA@ 000000000010c554     testsuite.c.o
- 0002:00005561       ??_C@_0BE@OMMANMHM@Too?5many?5handlers?$CB?6?$AA@ 000000000010c561     interrupts.c.o
- 0002:00005575       ??_C@_07MNDOFPPH@?6DONE?$CB?6?$AA@ 000000000010c575     disk.c.o
- 0002:0000557b       ??_C@_01EEMJAFIK@?6?$AA@   000000000010c57b     testsuite.c.o
+ 0002:00005443       ??_C@_03OHEJPPDF@?$CFp?6?$AA@ 000000000010c443     disk.c.o
+ 0002:00005447       ??_C@_0BA@IOAINKNM@Divide?5by?5zero?6?$AA@ 000000000010c447     interrupts.c.o
+ 0002:00005457       ??_C@_0CJ@DGFCJGDO@BUG?3?5disk_read_sectors?5with?5no?5c@ 000000000010c457     disk.c.o
+ 0002:00005480       ??_C@_0DE@NBPFEMAA@BUG?3?5Cannot?5dispatch?5when?5a?5requ@ 000000000010c480     disk.c.o
+ 0002:000054b4       ??_C@_0BA@FPKEGBPF@Illegal?5Opcode?6?$AA@ 000000000010c4b4     interrupts.c.o
+ 0002:000054c4       ??_C@_0CC@LPPGPMAO@Warning?3?5Unhandled?5interrupt?3?5?$CFd@ 000000000010c4c4     interrupts.c.o
+ 0002:000054e6       ??_C@_0BO@PPDAOKAG@Cannot?5read?5Root?5Cluster?3?5?$CFd?6?$AA@ 000000000010c4e6     disk.c.o
+ 0002:00005504       ??_C@_0CB@HMGHNKGJ@Cannot?5read?5partition?5table?3?5?$CFd?6@ 000000000010c504     disk.c.o
+ 0002:00005525       ??_C@_0L@NACIDDFB@ERROR?3?5?$CFd?6?$AA@ 000000000010c525     testsuite.c.o
+ 0002:00005530       ??_C@_0BF@NALIMPHK@Cannot?5read?5VBR?3?5?$CFd?6?$AA@ 000000000010c530     disk.c.o
+ 0002:00005545       ??_C@_06HCHMEBHM@START?6?$AA@ 000000000010c545     kmain.c.o
+ 0002:0000554c       ??_C@_0M@JCNEDAPF@AFTER?5READ?6?$AA@ 000000000010c54c     testsuite.c.o
+ 0002:00005558       ??_C@_0N@FJDDMCBC@BEFORE?5READ?6?$AA@ 000000000010c558     testsuite.c.o
+ 0002:00005565       ??_C@_0BE@OMMANMHM@Too?5many?5handlers?$CB?6?$AA@ 000000000010c565     interrupts.c.o
+ 0002:00005579       ??_C@_07MNDOFPPH@?6DONE?$CB?6?$AA@ 000000000010c579     disk.c.o
+ 0002:0000557f       ??_C@_01EEMJAFIK@?6?$AA@   000000000010c57f     testsuite.c.o
  0003:00000000       _lowlevel_addresses        000000000010d000     asmstubs.c.o
  0003:000001e4       _heap                      000000000010d1e4     memory.c.o
  0003:000001e8       _currentState              000000000010d1e8     console.c.o
@@ -175,7 +176,7 @@
  0001:00000950       _enable_busmaster          0000000000101950     disk.c.o
  0001:00000af0       _dispatch_request          0000000000101af0     disk.c.o
  0001:00000f40       _read_partition_table_callback 0000000000101f40     disk.c.o
- 0001:00001070       _read_root_callback        0000000000102070     disk.c.o
+ 0001:00001060       _read_root_callback        0000000000102060     disk.c.o
  0001:00001110       _getLegacyResources        0000000000102110     disk.c.o
  0001:00001140       _read_vbr_callback         0000000000102140     disk.c.o
  0001:000012a1       reset_cs                   00000000001022a1     interrupts.c.o
