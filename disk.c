@@ -249,7 +249,7 @@ static void read_root_callback( int errorcode,void* sectorData, void* sectorNum)
         kprintf("%c",data[i]);
     } 
 
-    kprintf("\nDONE!\n");
+    kprintf("\nDONE\n");
 }
 
 void do_this(){
