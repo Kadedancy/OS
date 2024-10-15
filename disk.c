@@ -236,7 +236,7 @@ u32 clusterNumberToSectorNumber(u32 clustnum){
     delta += (clustnum - 2) * vbr.sectors_per_cluster;
     return delta; 
 }
-static void read_root_callback( int errorcode,void* sectorData, void* sectorNum){
+/*static void read_root_callback( int errorcode,void* sectorData, void* sectorNum){
     if( errorcode != SUCCESS ){
         kprintf("Cannot read Root Cluster: %d\n",errorcode);
         panic("Cannot continue");
@@ -250,25 +250,160 @@ static void read_root_callback( int errorcode,void* sectorData, void* sectorNum)
     } 
 
     kprintf("\nDONE\n");
+}*/
+
+static void parseFilename(struct DirEntry* entry, char* buffer) {
+    unsigned bufferCharCout = 0;
+
+    for(int i = 0; i < 8; i++) {
+        if(entry->base[i] != '\0' && entry->base[i] != ' ')
+            buffer[bufferCharCout++] = entry->base[i];
+    } 
+
+    buffer[bufferCharCout++] = '.';
+
+    for(int i = 0; i < 3; i++) {
+        if(entry->ext[i] != '\0' && entry->base[i] != ' ')
+            buffer[bufferCharCout++] = entry->ext[i];
+    }
+
+    while(bufferCharCout < 13) {
+         buffer[bufferCharCout++] = ' ';
+    }
+
+    buffer[--bufferCharCout] = '\0';
+}
+
+static unsigned len(char* string) {
+    unsigned length = 0;
+
+    while(string[length] != '\0')
+        length++;
+     
+    return length;
+}
+
+static char longFilenameReversed[30];
+static unsigned longFilenameReverseIndex = 0;
+
+static void listFiles(int errorcode, void* buffer, void* callback){
+
+    if(errorcode != SUCCESS) {
+        panic("ERROR!");
+        return;
+    }
+
+    struct DirEntry* de = (struct DirEntry*)buffer;
+
+    for(int i = 0; i < 100; i++)
+        longFilenameReversed[i] = '\0';
+
+    longFilenameReversed[0] = ']';
+    longFilenameReversed[1] = 'e';
+    longFilenameReversed[2] = 'n';
+    longFilenameReversed[3] = 'o';
+    longFilenameReversed[4] = 'N';
+    longFilenameReversed[5] = '[';
+
+    for(int i = 0; i < 128; i++) {
+        if(de[i].base[0] == 0x00)
+            break;
+
+        // Check if the iteration is on a deleted file
+        if((unsigned char)de[i].base[0] == 0xe5)
+            continue;
+
+        // Skip long filenames
+        if(de[i].attributes != 0x0f) {
+            // Create a name buffer
+            char filenameBuffer[13];
+            for(int j = 0; j < 13; j++)
+                filenameBuffer[j] = '\0';
+
+            // Get the no spaced filename
+            parseFilename(&de[i], filenameBuffer);
+
+            // Get the modified date
+            unsigned short year = ((de[i].lastModifiedDate >> 9) & 0x7F) + 1980;
+            unsigned short month = (de[i].lastModifiedDate >> 5) & 0x0f;
+            unsigned short day = de[i].lastModifiedDate & 0x1F;
+
+            // Get the modified time
+            unsigned short hour = ((de[i].lastModifiedTime >> 11) & 0x1F);
+            unsigned short minute = ((de[i].lastModifiedTime >> 5) & 0x3F);
+            unsigned short second = de[i].lastModifiedTime & 0x3F;
+
+            // Check the hour
+            char hourType[3];
+            if(hour > 12) {
+                hour -= 12;
+                hourType[0] = 'P';
+                hourType[1] = 'M';
+                hourType[2] = '\0';
+            } else {
+                hourType[0] = 'A';
+                hourType[1] = 'M';
+                hourType[2] = '\0';
+            }
+
+            // Get the length of the long filename
+            unsigned longFilenameLength = len(longFilenameReversed);
+
+            // Reverse the longFilenameLength
+            char longFilename[100];
+            for(int i = 0; i < 100; i++)
+                longFilename[i] = '\0';
+
+            int p1 = 0;
+            int p2 = longFilenameLength - 1;
+            while(p2 >= 0) {
+                longFilename[p1] = longFilenameReversed[p2];
+                p1++;
+                p2--;
+            }
+        
+            // Print the returned buffer
+            kprintf("%-12s %6d  %02d/%02d/%04d %02d:%02d:%02d %s  %s\n",
+                filenameBuffer, de[i].size,
+                month, day, year, hour, minute, second, hourType, longFilename);
+            
+            for(int i = 0; i < 100; i++)
+                longFilenameReversed[i] = '\0';
+
+            longFilenameReversed[0] = ']';
+            longFilenameReversed[1] = 'e';
+            longFilenameReversed[2] = 'n';
+            longFilenameReversed[3] = 'o';
+            longFilenameReversed[4] = 'N';
+            longFilenameReversed[5] = '[';
+
+            longFilenameReverseIndex = 0;
+        }
+        else {
+            struct LFNEntry* lfn = (struct LFNEntry*)&de[i];
+
+            for(int i = 3; i >= 0; i--) {
+                if(lfn->name2[i] != 0x0000 && lfn->name2[i] != -1)
+                    longFilenameReversed[longFilenameReverseIndex++] = lfn->name2[i];
+            }
+
+            for(int i = 11; i >= 0; i--) {
+                if(lfn->name1[i] != 0x0000 && lfn->name1[i] != -1)
+                    longFilenameReversed[longFilenameReverseIndex++] = lfn->name1[i];
+            }
+
+            for(int i = 9; i >= 0; i--) {
+                if(lfn->name0[i] != 0x0000 && lfn->name0[i] != -1)
+                    longFilenameReversed[longFilenameReverseIndex++] = lfn->name0[i];
+            }
+            longFilenameReversed[longFilenameReverseIndex] = '\0';
+        }
+    }
+
+    kprintf("\nDONE\n");
 }
 
 void do_this(){
     u32 sectorNum = clusterNumberToSectorNumber(vbr.root_cluster);
-    disk_read_sectors(sectorNum,1,read_root_callback,(void*)sectorNum);
+    disk_read_sectors(sectorNum,2,listFiles,(void*)sectorNum);
 }
-/*
-void listFiles(int errorcode, void* buffer, void* data){
-    if(errorcode != SUCCESS){
-        panic("AAAAAAAAAHHHHHHHHH!!!!!!!!!!!!!!")
-    }
-    struct DirEntry* de = (struct DirEntry*) buffer;
-    for(int i = 0; i < 128; i++){
-        if(de[i].base[0]== 0){
-            break;
-        }
-        char buff[13];
-        fileNameCheck(de,buff);
-        kprinf("%s", buffer);
-    }
-
-}*/
