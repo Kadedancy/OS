@@ -309,31 +309,24 @@ static void listFiles(int errorcode, void* buffer, void* callback){
         if(de[i].base[0] == 0x00)
             break;
 
-        // Check if the iteration is on a deleted file
         if((unsigned char)de[i].base[0] == 0xe5)
             continue;
 
-        // Skip long filenames
         if(de[i].attributes != 0x0f) {
-            // Create a name buffer
             char filenameBuffer[13];
             for(int j = 0; j < 13; j++)
                 filenameBuffer[j] = '\0';
 
-            // Get the no spaced filename
             parseFilename(&de[i], filenameBuffer);
 
-            // Get the modified date
             unsigned short year = ((de[i].lastModifiedDate >> 9) & 0x7F) + 1980;
             unsigned short month = (de[i].lastModifiedDate >> 5) & 0x0f;
             unsigned short day = de[i].lastModifiedDate & 0x1F;
 
-            // Get the modified time
             unsigned short hour = ((de[i].lastModifiedTime >> 11) & 0x1F);
             unsigned short minute = ((de[i].lastModifiedTime >> 5) & 0x3F);
             unsigned short second = de[i].lastModifiedTime & 0x3F;
 
-            // Check the hour
             char hourType[3];
             if(hour > 12) {
                 hour -= 12;
@@ -346,10 +339,8 @@ static void listFiles(int errorcode, void* buffer, void* callback){
                 hourType[2] = '\0';
             }
 
-            // Get the length of the long filename
             unsigned longFilenameLength = len(longFilenameReversed);
 
-            // Reverse the longFilenameLength
             char longFilename[100];
             for(int i = 0; i < 100; i++)
                 longFilename[i] = '\0';
@@ -361,8 +352,7 @@ static void listFiles(int errorcode, void* buffer, void* callback){
                 p1++;
                 p2--;
             }
-        
-            // Print the returned buffer
+
             kprintf("%-12s %6d  %02d/%02d/%04d %02d:%02d:%02d %s  %s\n",
                 filenameBuffer, de[i].size,
                 month, day, year, hour, minute, second, hourType, longFilename);
