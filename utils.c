@@ -89,3 +89,25 @@ void* queue_get(struct Queue* Q){
     return temp;
 
 }
+
+unsigned kstrlen( const char* s){
+    unsigned c = 0;
+    while(*s++) c++;
+    return c;
+}
+
+void kstrcpy(char* d, const char* s){
+    while((*d++ = *s++));
+    return
+}
+
+void toupper(char c){
+    
+    return (c>='a'&&c<='z') ? c-32 : u;
+}
+//return 0 if not equal nonzero otherwise
+int kstrequal(const char* a , const char* b){
+    while(*a && *b && *a == * b) (void)((a++) , (b++));
+    return (!*a) && (!*b);
+        
+}

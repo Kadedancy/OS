@@ -128,3 +128,7 @@ struct Queue{
 
 int queue_put(struct Queue* Q, void* data);
 void* queue_get(struct Queue* Q);
+unsigned kstrlen(const char* s);
+void kstrcpy(char* d, const char* s);
+void toupper(char c);
+int kstrequal(const char* a , const char* b);
