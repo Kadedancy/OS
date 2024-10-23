@@ -8,7 +8,7 @@ import os
 import random
 import re
 
-TIMEOUT = 10
+TIMEOUT = 4
 
 P=None
 

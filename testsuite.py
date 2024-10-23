@@ -1,6 +1,7 @@
 import subprocess
 
-REMOVE="article7.txt"
+#!!
+REMOVE="article3.txt"
 #!!
 
 def copy(python,imgfile):

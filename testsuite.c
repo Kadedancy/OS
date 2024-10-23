@@ -1,10 +1,8 @@
-#define REMOVED "article7.txt"
-#define MAGICNUMBER "4358"
 
 
 #include "errno.h"
 #include "kprintf.h"
-#include "fs.h"
+#include "file.h"
 
 #ifndef REMOVED
 #define REMOVED "ARTICLE3.TXT"

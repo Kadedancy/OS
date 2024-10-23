@@ -98,16 +98,18 @@ unsigned kstrlen( const char* s){
 
 void kstrcpy(char* d, const char* s){
     while((*d++ = *s++));
-    return
+    return;
 }
 
-void toupper(char c){
-    
-    return (c>='a'&&c<='z') ? c-32 : u;
-}
-//return 0 if not equal nonzero otherwise
-int kstrequal(const char* a , const char* b){
-    while(*a && *b && *a == * b) (void)((a++) , (b++));
+int kstrequal(const char* a, const char* b) {
+    while(*a && *b && *a == *b) ((void) ((a++) , (b++)));
     return (!*a) && (!*b);
-        
+}
+
+char tolower(char c) {
+    return (c >= 'A' && c <= 'Z') ? c+32 : c;
+}
+
+char toupper(char c) {
+    return (c >= 'a' && c <= 'z') ? c-32 : c;
 }

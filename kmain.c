@@ -20,7 +20,7 @@ void sweet();
 
 void kmain2(){
     kprintf("START\n");
-    do_this();
+
 
 }
 
@@ -33,7 +33,7 @@ void kmain(struct MultibootInfo* mbi){
     memory_init();
     disk_init();
     interrupt_enable();
-    disk_read_metadata(kmain2);
+    disk_read_metadata(sweet);
 
     while(1){
         halt();

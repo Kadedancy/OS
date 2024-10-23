@@ -14,6 +14,21 @@ struct PhysicalRegionDescriptor{
     u16 byteCount;
     u16 flags;       //0x8000=last one, 0x0000=not last
 };
+#pragma pack(pop)
+
+static struct PhysicalRegionDescriptor* physicalRegionDescriptor;
+
+typedef void (*disk_callback_t)(int, void*, void*);
+
+void disk_interrupt(struct InterruptContext* ctx);
+void disk_read_sectors(
+                    unsigned firstSector,
+                    unsigned numSectors,
+                    disk_callback_t callback,
+                    void* callback_data);
+
+// Filesystem items
+#pragma pack(push,1)
 
 struct GUID {
     u32 time_low;
@@ -22,7 +37,8 @@ struct GUID {
     u16 clock;
     u8 node[6];
 };
-struct GPTEntry{
+
+struct GPTEntry {
     struct GUID type;
     struct GUID guid;
     u32 firstSector;
@@ -33,7 +49,9 @@ struct GPTEntry{
     u32 attributes64;
     u16 name[36];
 };
+#pragma pack(pop)
 
+#pragma pack(push, 1)
 struct VBR{
     char jmp[3];
     char oem[8];
@@ -65,7 +83,15 @@ struct VBR{
     char code[420];
     u16 checksum;
 };
+#pragma pack(pop)
 
+typedef void (*disk_metadata_callback_t)(void);
+void disk_read_metadata( disk_metadata_callback_t kmain_callback );
+u32 clusterNumberToSectorNumber( u32 clnum );
+void readRoot();
+
+// Root directory items
+#pragma pack(push,1)
 struct DirEntry {
     char base[8];
     char ext[3];
@@ -81,7 +107,9 @@ struct DirEntry {
     u16 clusterLow;
     u32 size;
 };
+#pragma pack(pop)
 
+#pragma pack(push,1)
 struct LFNEntry {
     unsigned char sequenceNumber;
     char name0[10];             //5 characters
@@ -94,19 +122,4 @@ struct LFNEntry {
 };
 #pragma pack(pop)
 
-static struct PhysicalRegionDescriptor* physicalRegionDescriptor;
-
-typedef void (*disk_callback_t)(int, void*, void*);
-typedef void (*disk_metadata_callback_t)(void);
-
-void disk_interrupt(struct InterruptContext* ctx);
-void disk_read_sectors(
-                    unsigned firstSector,
-                    unsigned numSectors,
-                    disk_callback_t callback,
-                    void* callback_data);
-
-void disk_read_metadata( disk_metadata_callback_t kmain_callback);
-u32 clusterNumberToSectorNumber(u32 clustnum);
-void do_this();
-
+void parseFilename(struct DirEntry* entry, char* buffer);
