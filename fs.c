@@ -1,156 +1,3 @@
-/*#include "fs.h"
-#include "errno.h"
-#include "utils.h"
-#include "memory.h"
-#include "disk.h"
-
-void file_open_part_2(int errorcode,void* data,void* pFileOpenCallbackData){
-    struct FileOpenCallbackData* d = (struct FileOpenCallbackData*) pFileOpenCallbackData;
-    if( errorcode != 0 ){
-        file_table[d->fd].in_use=0;
-        d->callback(errorcode, d->callback_data);
-        kfree(d);
-        return;
-    }
-
-    struct DirEntry* entries = (struct DirEntry*)data;
-    char filenameBuffer[13];
-    int match_found = 0;
-
-    for (int i = 0; i < 128; i++) {
-        if (entries[i].base[0] == 0x00) {
-            break;
-        }
-        
-        if ((unsigned char)entries[i].base[0] == 0xe5) {
-            continue;
-        }
-
-        parseFilename(&entries[i], filenameBuffer);
-
-        if (kstrequal(filenameBuffer, d->filename) == 0) {
-            match_found = 1;
-
-            file_table[d->fd].start_cluster = entries[i].firstCluster;
-            file_table[d->fd].size = entries[i].size;
-
-            d->callback(d->fd, d->callback_data);
-            break;
-        }
-    }
-
-    if (!match_found) {
-        file_table[d->fd].in_use = 0;
-        d->callback(ENOENT, d->callback_data);
-    }
-    kfree(d);
-    
-}
-
-void file_open(const char* filename, int flags, file_open_callback_t callback, void* callback_data)
-{
-    if( kstrlen( filename ) >= MAX_PATH ){
-        callback(ENOENT, callback_data); 
-        return;
-    }
-
-    int i;
-    int fd;
-    for(i = 0; i < MAX_FILES; i++){
-        if(file_table[i].in_use == 0){
-            break;
-        }
-    }
-    if(i == MAX_FILES){
-        callback(EMFILE, callback_data);
-        return;
-    }
-    file_table[fd].in_use=1;
-    struct FileOpenCallbackData* d = (struct FileOpenCallbackData*) kmalloc(sizeof(struct FileOpenCallbackData));
-    if(!d){
-        file_table[fd].in_use=0;
-        callback(ENOMEM, callback_data);
-        return;
-    }
-    d->fd=fd;
-    d->callback=callback;
-    d->callback_data=callback_data;
-    disk_read_sectors(clusterNumberToSectorNumber(2),vbr.sectors_per_cluster,file_open_part_2,d);
-}
-
-void file_close(int fd, file_close_callback_t callback,void* callback_data) {
-    if( fd < MAX_FILES && fd >= 0 && file_table[fd].in_use){
-        file_table[fd].in_use = 0;  // Mark file as closed
-        callback(SUCCESS, callback_data); // Success
-    } else {
-        callback(EBADF, callback_data); // Invalid file descriptor
-    }
-}
-
-void file_read( int fd,         //file to read from
-                void* buf,      //buffer for data
-                unsigned count, //capacity of buf
-                file_read_callback_t callback,
-                void* callback_data )//passed to callback
-{
-    ...verify parameters, etc...
-    struct ReadInfo* ri = kmalloc( sizeof(struct ReadInfo) );
-    if(!ri){
-        callback(ENOMEM, buf, 0, callback_data);
-        return;
-    }
-    ri->fd = fd;
-    ri->buffer = buf;
-    ri->num_requested=count;
-    ri->callback=callback;
-    ri->callback_data=callback_data;
-    unsigned secnum = clusterNumberToSectorNumber(
-        file_table[fd].firstCluster
-    );
-    disk_read_sectors( secnum,
-        vbr.sectors_per_cluster,
-        file_read_part_2,
-        ri
-    );
-}
-
-void file_read_part_2(int errorcode,void* sector_data,void* callback_data)
-{
-    struct ReadInfo* ri = (struct ReadInfo*) callback_data;
-    if( errorcode ){
-        ri->callback( errorcode, ri->buffer, 0, ri->callback_data );
-    } else {
-        unsigned  offsetInBuffer = file_table[fd]->offset % 4096 ;
-        unsigned numToCopy = bytesPerCluster - offsetInBuffer;
-        numToCopy = min( numToCopy, ri->num_requested, file_table[fd]->size - file_table[fd]->offset);
-        kmemcpy(ri->buffer,sector_data + offsetInBuffer, numToCopy);
-        ri->callback(
-            SUCCESS,
-            ri->buffer,
-            numToCopy,   
-            ri->callback_data
-        );
-    }
-    kfree(ri);      //important!
-    //note: sector_data will be freed by disk_read_sectors
-    //when we return to it from file_read_part_2
-    return;
-}
-
-void file_write( int fd,         //file to read from
-                void* buf,      //buffer for data
-                unsigned count, //capacity of buf
-                file_write_callback_t callback,
-                void* callback_data //passed to callback
-){
-    //no such system call
-    callback( ENOSYS, buf, callback_data );
-}
-
-int file_seek(int fd, int delta, int whence){
-
-}*/
-
 #include "fs.h"
 #include "errno.h"
 #include "disk.h"
@@ -164,6 +11,9 @@ struct File{
     int in_use;
     int flags;
     char filename[MAX_PATH+1];
+    unsigned offset;
+    unsigned size;
+    unsigned firstCluster;
 };
 
 #define MAX_FILES 16        //real OS's use something like 1000 or so...
@@ -181,6 +31,14 @@ struct longFilename {
     short endOfFilename;
 };
 
+struct ReadInfo{
+    int fd;
+    void* buffer;
+    unsigned num_requested;     //amount of data requested
+    file_read_callback_t callback;
+    void* callback_data;
+};
+
 static void file_open_part_2(int errorcode, void* data, void* pFileOpenCallbackData) {
     // Get the callback struct 
     struct FileOpenCallbackData* d = (struct FileOpenCallbackData*) pFileOpenCallbackData;
@@ -195,6 +53,10 @@ static void file_open_part_2(int errorcode, void* data, void* pFileOpenCallbackD
 
     struct DirEntry* de = (struct DirEntry*)data;
     int fileFound = 0;
+
+    for(int i = 0; i < MAX_FILES; i++){
+        file_table[i].firstCluster = (unsigned)((unsigned)de->clusterHigh << 16) | de->clusterLow;
+    }
 
     struct longFilename longFilename;
     for(unsigned i = 0; i < MAX_PATH; i++)
@@ -325,6 +187,8 @@ int file_open(const char* filename, int flags, file_open_callback_t callback, vo
 
     // Mark the entry in use
     file_table[fd].in_use = 1;
+    
+    //file_table[fd].firstCluster = (unsigned)((unsigned)de->clusterHigh << 16) | de->clusterLow;
 
     // Copy filename over
     kstrcpy(file_table[fd].filename, (char*)filename);
@@ -370,4 +234,119 @@ void file_close(int fd, file_close_callback_t callback, void* callback_data) {
     file_table[fd].in_use = 0;
     if(callback)
         callback(SUCCESS, callback_data);
+}
+
+void file_read_part_2(int errorcode,void* sector_data,void* callback_data){
+ struct ReadInfo* ri = (struct ReadInfo*) callback_data;
+    if (errorcode != 0) {
+        // Call the callback with an error if there was one
+        ri->callback(errorcode, ri->buffer, 0, ri->callback_data);
+        kfree(ri);
+        return;
+    }
+    else{
+        // Calculate the offset within the sector and how many bytes to copy
+        unsigned offsetInBuffer = file_table[ri->fd].offset % vbr.bytes_per_sector;
+        unsigned bytes_available = vbr.bytes_per_sector - offsetInBuffer;
+        unsigned numToCopy = (ri->num_requested < bytes_available) ? ri->num_requested : bytes_available;
+
+        // Perform the memory copy
+        kmemcpy(ri->buffer, sector_data, numToCopy);
+
+        // Update file offset and the remaining amount requested
+        file_table[ri->fd].offset += numToCopy;
+        ri->num_requested -= numToCopy;
+
+        // Finished reading, call the callback
+        ri->callback(SUCCESS, ri->buffer, file_table[ri->fd].offset, ri->callback_data);
+        }
+        
+    kfree(ri);      //important!
+    //note: sector_data will be freed by disk_read_sectors
+    //when we return to it from file_read_part_2
+    return;
+}
+
+void file_read( int fd,void* buf,unsigned count,file_read_callback_t callback, void* callback_data) 
+{
+    struct ReadInfo* ri = kmalloc( sizeof(struct ReadInfo) );
+        // Verify that the file descriptor is valid and in use
+    if (fd < 0 || fd >= MAX_FILES || !file_table[fd].in_use) {
+        callback(EMFILE, buf, 0, callback_data);  // Bad file descriptor error
+        return;
+    }
+
+    // Verify that the buffer is not NULL
+    if (buf == NULL) {
+        callback(EINVAL, buf, 0, callback_data);  // Invalid argument error
+        return;
+    }
+    
+    if(!ri){
+        callback(ENOMEM, buf, 0, callback_data);
+        return;
+    }
+    ri->fd = fd;
+    ri->buffer = buf;
+    ri->num_requested=count;
+    ri->callback=callback;
+    ri->callback_data=callback_data;
+    unsigned secnum = clusterNumberToSectorNumber(file_table[fd].firstCluster);
+    disk_read_sectors( secnum, vbr.sectors_per_cluster,file_read_part_2,ri);
+}
+
+void file_write( int fd, void* buf, unsigned count,  file_write_callback_t callback, void* callback_data)
+{
+    callback(ENOSYS,0,callback_data);
+}
+
+int file_seek(int fd, int delta, int whence){
+    //validate fd
+    if (fd < 0 || fd >= MAX_FILES || !file_table[fd].in_use) {
+        return EMFILE;
+    }
+    //validate whence
+    if (whence != SEEK_SET && whence != SEEK_CUR && whence != SEEK_END) {
+        return EINVAL; 
+    }
+
+      // Handle seeking based on whence
+    if (whence == SEEK_SET) {
+        // Seeking from the start of the file
+        if (delta < 0 || delta > file_table[fd].size) {
+            return EINVAL; // Invalid delta
+        }
+        file_table[fd].offset = delta; // Set the new offset
+    } else if (whence == SEEK_CUR) {
+        // Seeking from the current position
+        if (file_table[fd].offset + delta < 0 || file_table[fd].offset + delta > file_table[fd].size) {
+            return EINVAL; // Overflow or underflow
+        }
+        file_table[fd].offset += delta; // Update offset
+    } else if (whence == SEEK_END) {
+        // Seeking from the end of the file
+        if (delta > 0 || file_table[fd].size + delta < 0) {
+            return EINVAL; // Invalid delta
+        }
+        file_table[fd].offset = file_table[fd].size + delta; // Set offset relative to end
+    }
+
+    return file_table[fd].offset; // Return new offset
+}
+
+int file_tell(int fd, unsigned* offset){
+        // Check if fd is valid and in use
+    if (fd < 0 || fd >= MAX_FILES || !file_table[fd].in_use) {
+        return EMFILE; // Invalid file descriptor
+    }
+
+    // Check if the offset pointer is valid
+    if (offset == NULL) {
+        return EINVAL; // Invalid argument
+    }
+
+    // Store the current offset in the provided pointer
+    *offset = (unsigned)file_table[fd].offset;
+
+    return 0; // Success
 }

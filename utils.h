@@ -1,4 +1,4 @@
-#pragma once
+#pragma once 
 #pragma pack(push,1)
 
 typedef unsigned char u8;
@@ -101,7 +101,6 @@ struct MultibootInfo{
 };
 
 #pragma pack(pop)
-
 
 
 void outb(u16 port, u8 value);

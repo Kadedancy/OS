@@ -1,403 +1,660 @@
 
+//change this to 1 to get lots of debugging messages
+#define VERBOSE 1
 
-#include "errno.h"
+
+
+
+
+
 #include "kprintf.h"
 #include "file.h"
 
-#ifndef REMOVED
-#define REMOVED "ARTICLE3.TXT"
+#if VERBOSE
+#define vprintf kprintf
+#else
+static void vprintf(const char* fmt, ... ){
+}
 #endif
 
-#ifndef MAGICNUMBER
-#define MAGICNUMBER ""
-#endif
+static const char article6[] = {
+    "Article. VI.\n\n"
+    "All Debts contracted and Engagements entered into, before the Adoption "
+    "of this Constitution, shall be as valid against the United States under "
+    "this Constitution, as under the Confederation.\n\n"
+    "This Constitution, and the Laws of the United States which shall be made "
+    "in Pursuance thereof; and all Treaties made, or which shall be made, "
+    "under the Authority of the United States, shall be the supreme Law of the "
+    "Land; and the Judges in every State shall be bound thereby, any Thing in the "
+    "Constitution or Laws of any State to the Contrary notwithstanding.\n\n"
+    "The Senators and Representatives before mentioned, and the Members of "
+    "the several State Legislatures, and all executive and judicial Officers, "
+    "both of the United States and of the several States, shall be bound by Oath or "
+    "Affirmation, to support this Constitution; but no religious Test shall ever "
+    "be required as a Qualification to any Office or public Trust under the United States." };
 
-
-static const char* nonexist[] = {
-        "blargh", "blargleblargleboom",
-        "blargleblargleboom.burpblah", "b.burpblah",
-        "b.b", "art.txt","article1234.txt",
-        "article 2.TXT",
-        "article1.T","article1txt",
-        "article1.txtt", "bill..txt",
-        "article10.txt", "article100.txt",
-        "article1.txts","bills.txt",
-        "bill    .txt", "bill    txt",
-        "const.c ","const.c  ","const.c.",
-        "const.c..","const.c...",
-        "thisisareallylongfilenamebutitshouldnotcrashyouroperatingsystemifyourcodeiscorrectlywrittenandrobustlydesigned.c",
-        "x", "", ".txt",
-        "article1.c", "bill.z",
-        "foo.txt$",
-        0};
-
-static const char* exist[] = {
-    "article1.txt", "ARTICLE2.txt",
-    "ARTICLE3.TXT", "ArTiClE4.txt",
-    "article5.TXT", "bill.txt",
-    "foo$.t$",
-    "foo.txt",
-    "CONST.C", 0
+static const char article5[] = {
+    "Article. V.\n\n"
+    "The Congress, whenever two thirds of both Houses shall deem it necessary, "
+    "shall propose Amendments to this Constitution, or, on the Application of the "
+    "Legislatures of two thirds of the several States, shall call a Convention "
+    "for proposing Amendments, which, in either Case, shall be valid to all Intents "
+    "and Purposes, as Part of this Constitution, when ratified by the Legislatures "
+    "of three fourths of the several States, or by Conventions in three fourths thereof, "
+    "as the one or the other Mode of Ratification may be proposed by the Congress; "
+    "Provided that no Amendment which may be made prior to the Year One thousand eight "
+    "hundred and eight shall in any Manner affect the first and fourth Clauses "
+    "in the Ninth Section of the first Article; and that no State, without its Consent, "
+    "shall be deprived of its equal Suffrage in the Senate."
 };
 
-typedef struct Test {
-    char explanation[80];
-    void* func;
-    const char* fname;
-    int fd;
-    int shouldSucceed;
-} Test;
+struct Seeks{
+    int delta;
+    int whence;
+};
 
-#define NUM_TESTS 200
-static int currentTest=0;
-static int numTests=0;
-static Test tests[NUM_TESTS];
+#define canary 0x45
+static struct Seeks seeks[] = {
+    {3,0},
+    {14,0},
+    {4096,0},
+    {159,0},
+    {4095,0},
+    {-2010,0},
+    {26,0},
+    {-1,0},
+    {53,0},
+    {5,0},
+    {89,0},
+    {5000,0},
+    {20000,0},
+    {79,0},
+    {323,0},
+    {0,0},
+    {4097,0},
+    {sizeof(article5),0},
+    {52, 0},
+    {sizeof(article5)-1,0},
+    {sizeof(article5)-2,0},
+    {3, 2},
+    {14,2},
+    {159,2},
+    {20000,2},
+    {5020,2},
+    {1,2},
+    {4096,2},
+    {409,2},
+    {4095,2},
+    {20000,2},
+    {100,2},
+    {4097,2},
+    {100,2},
+    {5906,2},
+    {0,2},
+    {16,2},
+    {(int)sizeof(article5),2},
+    {20,2},
+    {(int)sizeof(article5)+1,2},
+    {50,2},
+    {(int)sizeof(article5)-1,2},
+    {-(int)(sizeof(article5)-4),2},
+    {-5,2},
+    {77,2},
+    {(int)sizeof(article5)-2,2},
+    {-(int)(sizeof(article5)-2),2},
+    {-10,2},
+    {-5,2},
+    {26,0},
+    {-1,2},
+    {-10,1},
+    {26,0},
+    {50,1},
+    {-13,1},
+    {1000,1},
+    {26,0},
+    {-4000,1},
+    {26,0},
+    {4000,1},
+    {26,0},
+    {-4099,1},
+    {26,0},
+    {4099,1},
+    {26,0},
+    { 0, 1},
+    {26,0},
+    {-1, 1},
+    { 20000, 1},
+    {-20000, 1},
+    {26,0},
+    {-20,1},
+    {20,1},
+    {-4000,2},
+    {0x7fffffff,0},     //2G
+    {0x7fffffff,1},     //just short of 4G
+    {0x7fffffff,1},     //overflow; should be invalid
+    {0,3},            //invalid whence
+    {-1,-1}
+};
 
-#define MAX_USED 16
-int used[MAX_USED];           //file descriptors that are in-use
 
-#ifndef NULL
-#define NULL ((void*)0)
-#endif
+//~ static void memdump(void* p, int count){
+    //~ const int charsPerLine=16;
+    //~ unsigned char* c = (unsigned char*) p;
+    //~ while( count > 0 ){
+        //~ int i;
+        //~ for(i=0; i<charsPerLine && i < count;++i){
+            //~ kprintf("%02x ",c[i]);
+        //~ }
+        //~ for( ; i<charsPerLine; ++i ){
+            //~ kprintf("   ");
+        //~ }
+        //~ kprintf(" | ");
+        //~ for(i=0; i<charsPerLine && i < count;++i){
+            //~ if( c[i] >= 32 && c[i] <= 126 )
+                //~ kprintf("%c",c[i]);
+            //~ else
+                //~ kprintf(".");
+        //~ }
+        //~ kprintf("\n");
+        //~ count-=charsPerLine;
+        //~ c += charsPerLine;
+    //~ }
+//~ }
 
-static void dispatchCurrentTest();
-static void dispatchNextTest();
 
-static void openCallback(int fd, void* data)
-{
-    Test* T = (Test*) data;
-    if( fd < 0 ){
-        kprintf("Failed with code %d ",fd);
-        if( T->shouldSucceed ){
-            kprintf("\n\nIncorrect: Stopping.\n");
-            return;
-        } else {
-            kprintf("[OK]\n");
-        }
-    } else {
-        kprintf("Succeeded with fd %d ",fd);
-
-        int i;
-
-        for(i=0;i<MAX_USED;++i){
-            if( used[i] == fd ){
-                kprintf("Duplicate descriptor! [BAD]\n");
-                return;
-            }
-        }
-
-        for(i=0;i<MAX_USED;++i){
-            if( used[i] == -1 ){
-                used[i] = fd;
-                break;
-            }
-        }
-        if( i == MAX_USED ){
-            kprintf("\nToo many open's succeeded. Test harness error?\n");
-            return;
-        }
-
-        if ( T->shouldSucceed ){
-            kprintf("[OK]\n");
-        } else {
-            kprintf("\n\nIncorrect: Stopping\n");
-            return;
-        }
+static unsigned mystrlen(const char* s){
+    unsigned len=0;
+    while(*s){
+        len++;
+        s++;
     }
-
-    dispatchNextTest();
+    return len;
 }
 
-static void closeCallback(int errorcode, void* data)
-{
-    Test* T = (Test*) data;
+static int article6fd1;
+static int article5fd;
+static int article6fd2;
+#define BUFFSIZE 1024
+static char a6a[BUFFSIZE];
+static char a6b[BUFFSIZE];
+static char a5[BUFFSIZE];
+static void f1(int fd, void* callback_data);
+static void f4( int errorcode, void* buf, unsigned numread, void* data);
+static void doNextSeekTest();
+static void f5( int errorcode, void* vbuf, unsigned nr, void* data);
+static void f6();
+static char* p[3];
+static int fds[3];          //article 6a, article5, article6b
+static unsigned count[3];
+static int order[3];
+#define readsize 27
+static int readsLeft;
+static int atEOF[3];
+static int seekTest;
+static int filesize[3];
+static void initiateOverlappingReads();
+static long long int currentOffset;
 
-    if( errorcode ){
-        kprintf("Failed with code %d ",errorcode);
-        if( T->shouldSucceed ){
-            kprintf("\n\nIncorrect: Stopping.\n");
-            return;
-        } else {
-            kprintf("[OK]\n");
-        }
-    } else {
-        kprintf("Succeeded ");
-        if( T->shouldSucceed ){
-            int i;
-            for(i=0;i<MAX_USED;++i){
-                if( used[i] == T->fd ){
-                    used[i] = -1;
-                    break;
-                }
-            }
-            if( i == MAX_USED ){
-                kprintf("Internal test harness error at line %d\n", __LINE__ );
-                return;
-            }
-            kprintf("[OK]\n");
-        } else {
-            kprintf("\n\nIncorrect: Stopping\n");
-            return;
-        }
-    }
-
-    dispatchNextTest();
-
-}
-
-
-static void closeFileIfOpen(int errorcode, void* data)
-{
-    Test* T = (Test*) data;
-
-    if( T->shouldSucceed ){
-
-        //this is the first time we try to close
-        //this file. Don't remove from the used list
-        //since we're going to try again later
-        //to close that same descriptor in order to
-        //verify we get an error.
-
-        if( errorcode == SUCCESS ){
-
-            kprintf("Succeeded [OK]\n");
-        } else {
-            kprintf("Failed with code %d ",errorcode);
-            kprintf("\n\nIncorrect: Stopping.\n");
-            return;
-        }
-
-    } else {
-        //this is the second time we try to close this
-        //file. This time, we do remove it from the used
-        //list. Note that T->fd is actually the
-        //index in used[], not the fd itself.
-        if( errorcode == SUCCESS ){
-            kprintf("Succeeded\n\nIncorrect: Stopping\n");
-            return;
-        } else {
-            used[ T->fd ] = -1;
-            kprintf("Failed with code %d [OK]\n",errorcode);
-        }
-    }
-
-    dispatchNextTest();
-
-}
-
-unsigned getesp(){
-    unsigned esp;
-    __asm__( "mov %%esp,%%eax" : "=a"(esp) );
-    return esp;
-}
-
-static void exhaustionTest( int fd, void* data)
-{
-    Test* T = (Test*) data;
-    T->fd ++;       //num that we did
-    if( fd >= 0 ){
-        T->shouldSucceed++; //num that succeeded
-        dispatchCurrentTest();
-    }
-    else {
-        if( T->shouldSucceed > 15 ){
-            kprintf("Exhaustion test succeeded\n");
-            dispatchNextTest();
-            return;
-        }
-    }
-}
-
-static void dispatchNextTest(){
-    currentTest++;
-    if( currentTest >= NUM_TESTS ){
-        //done
-        return;
-    }
-    dispatchCurrentTest();
-}
-static void dispatchCurrentTest(){
-
-
-    Test* T = &(tests[currentTest]);
-    if( T->explanation[0] ){
-        kprintf("%s", T->explanation);
-    }
-
-    if( T->func == NULL ){
-        //ignore and go on to next one
-        dispatchNextTest();
-        return;
-    }
-
-    int idx = T - tests;
-    kprintf("Running test %d...\n",idx);
-
-
-    if( T->func == file_open ){
-        kprintf("Trying to open '%s' ", T->fname);
-        if( T->shouldSucceed )
-            kprintf("(should succeed)");
-        else
-            kprintf("(should fail)");
-        kprintf(" ... ");
-
-        file_open( T->fname,0, openCallback, T );
-        return;
-    } else if( T->func == file_close ){
-        kprintf("Closing fd %d ", T->fd);
-        if( T->shouldSucceed )
-            kprintf("[should succeed]");
-        else
-            kprintf("[should fail]");
-        kprintf(" ... ");
-
-        file_close( T->fd, closeCallback, T );
-        return;
-    } else if( T->func == closeFileIfOpen ){
-
-        //T->fd is actually the *index* in used[],
-        //not the file descriptor itself
-        int fd = used[ T->fd ];
-        if( fd == -1 ){
-            //go on to the next test
-            dispatchNextTest();
-            return;
-        }
-
-        kprintf("Closing fd %d ", fd);
-        if( T->shouldSucceed )
-            kprintf("[should succeed]");
-        else
-            kprintf("[should fail]");
-        kprintf(" ... ");
-
-        file_close( fd, closeFileIfOpen, T );
-        return;
-    } else if( T->func == exhaustionTest ){
-        file_open("ARTICLE1.TXT",0,exhaustionTest,T);
-        return;
-    } else {
-        kprintf("Internal test harness error at line %d\n",__LINE__);
-        return;
-    }
-}
-
-static void scopy(char* d, const char* s ){
-    while( ( (*d++) = (*s++) ) )
-        ;
-}
-
-static int up(char x){
-    if( x >= 'a' && x <= 'z' )
-        return x-32;
-    else
-        return x;
-}
-
-static int scmp(const char* a, const char* b){
+static void freeze(){
     while(1){
-        if( !*a || !*b )
-            break;
-        if( up(*a) != up(*b) )
-            return 0;
-        ++a;
-        ++b;
+        __asm__("cli");
+        __asm__("hlt");
     }
-    if( *a == 0 && *b == 0 )
-        return 1;
-    else
-        return 0;
 }
 
-
-extern void panic(const char*);
+unsigned a6len;
+unsigned a5len;
 
 void sweet(){
+    
+    vprintf("Beginning sweet()\n");
+    
+    a6len = mystrlen(article6);
+    a5len = mystrlen(article5);
+    seekTest=-1;
+    currentOffset = a5len;
 
-    kprintf("In sweet()\n");
-    if( currentTest != 0 )
-        panic("currentTest is not zero: Buffer overflow?");
-
-
-    //can set this to a larger value to start in the middle of the tests
-    currentTest=0;
-
-    int ti=0;
-    for(int j=0;j<16;++j)
-        used[j] = -1;
-
-    scopy( tests[ti++].explanation , "==================================\n");
-    scopy( tests[ti++].explanation , "Testing nonexistent file open...\n"  );
-    scopy( tests[ti++].explanation , "==================================\n");
-
-    for(int i=0;nonexist[i];++i){
-        //~ int fd = file_open(nonexist[i],0);
-        tests[ti].func = file_open;
-        tests[ti].fname = nonexist[i];
-        tests[ti].shouldSucceed = 0;
-        ti++;
+    if( a6len != 949 ){
+        kprintf("testsuite line %d: article6 had wrong length: %d\n", __LINE__, a6len );
+        freeze();
+    }
+    if( a5len != 850 ){
+        kprintf("testsuite line %d: article5 had wrong length: %d\n", __LINE__, a5len );
+        freeze();
     }
 
+    vprintf("testsuite: Opening article6.txt\n");
+    file_open("article6.txt", 0, f1, 0);
+}
 
-    scopy( tests[ti++].explanation , "==================================\n");
-    scopy( tests[ti++].explanation , "Testing close of non-open files\n"   );
-    scopy( tests[ti++].explanation , "==================================\n");
+static int lockCount=0;
+static void lock(){
+    __asm__ volatile("cli");
+    lockCount++;
+}
+static void unlock(){
+    lockCount--;
+    if( lockCount == 0 )
+        __asm__ volatile("sti");
+}
+    
 
-    for(int i=-4;i<10;++i){
-        tests[ti].func = file_close;
-        tests[ti].fd = i;
-        tests[ti].shouldSucceed = 0;
-        ti++;
+static void f2(int fd, void* x);
+
+static void f1(int fd, void* callback_data)
+{
+
+    article6fd1 = fd;
+
+    vprintf("testsuite: Got descriptor %d for article6.txt\n",article6fd1);
+
+    if( article6fd1 < 0 ){
+        kprintf("testsuite line %d: Negative file descriptor from article6.txt\n",__LINE__);
+        freeze();
     }
 
+    vprintf("testsuite: Opening article5.txt\n");
+    file_open("article5.txt",0,f2,0);
+}
 
-    scopy( tests[ti++].explanation , "==================================\n");
-    scopy( tests[ti++].explanation , "Testing open of existing files\n"    );
-    scopy( tests[ti++].explanation , "==================================\n");
+static void f3(int fd, void* x);
 
-    for(int i=0;exist[i];++i){
-        tests[ti].func = file_open;
-        tests[ti].fname = exist[i];
-        tests[ti].shouldSucceed = !scmp(REMOVED,exist[i]);
-        ti++;
+static void f2(int fd, void* x){
+    article5fd = fd;
+    if( article5fd < 0 ){
+        kprintf("testsuite line %d: Could not open article5.txt: %d\n",__LINE__,article5fd);
+        freeze();
+    }
+    else{
+        vprintf("testsuite: Got descriptor for %d article5.txt\n",article5fd);
     }
 
+    vprintf("testsuite: Opening article6.txt a second time\n");
+    file_open("article6.txt",0,f3,0);
+}
 
-    scopy( tests[ti++].explanation , "==================================\n");
-    scopy( tests[ti++].explanation , "Testing close of opened files\n"     );
-    scopy( tests[ti++].explanation , "==================================\n");
+
+static void f3(int fd, void* x){
 
 
-    for(int i=15;i>=0;i--){
-        tests[ti].func = closeFileIfOpen;
-        tests[ti].fd = i;       //want index, not fd
-        tests[ti].shouldSucceed = 1;
-        ti++;
+    article6fd2 = fd;
+    if( article6fd2 < 0 ){
+        kprintf("testsuite line %d: Could not open article6.txt a second time: %d\n",
+            __LINE__, article6fd2);
+        freeze();
     }
 
-    for(int i=15;i>=0;i--){
-        tests[ti].func = closeFileIfOpen;
-        tests[ti].fd = i;   //want index, not fd
-        tests[ti].shouldSucceed = 0;
-        ti++;
+    vprintf("testsuite: Got descriptor for %d article6.txt (second time)\n",article6fd2);
+
+    if( article6fd1 == article6fd2 || article6fd1 == article5fd || article6fd2 == article5fd ){
+        kprintf("testsuite line %d: File descriptors should all be different, but they are not\n", __LINE__);
+        freeze();
     }
 
+    p[0] = a6a;
+    p[1] = a5;
+    p[2]= a6b;
+    fds[0] = article6fd1;
+    fds[1] = article5fd;
+    fds[2] = article6fd2;
+    filesize[0] = a6len;
+    filesize[1] = a5len;
+    filesize[2] = a6len;
+    count[0]=0;
+    count[1]=0;
+    count[2]=0;
+    order[0]=0;
+    order[1]=1;
+    order[2]=2;
+    atEOF[0]=0;
+    atEOF[1]=0;
+    atEOF[2]=0;
 
-    scopy( tests[ti++].explanation , "==================================\n");
-    scopy( tests[ti++].explanation , "Exhaustion test...\n"                );
-    scopy( tests[ti++].explanation , "==================================\n");
 
-    tests[ti].func = exhaustionTest;
-    tests[ti].shouldSucceed=0;          //num that succeeded
-    tests[ti].fd = 0;               //num done
-    ti++;
+    initiateOverlappingReads();
 
-    scopy( tests[ti++].explanation , "\n\nAll OK! " MAGICNUMBER "\n\n");
+}
 
-    numTests = ti;
-    kprintf("%d tests\n",numTests);
+void f4AllAtEOF();
 
-    dispatchCurrentTest();
+static void initiateOverlappingReads()
+{
+    //fire off three overlapping reads
+
+    //shuffle the order around
+    int tmp=order[0];
+    order[0]=order[1];
+    order[1]=order[2];
+    order[2]=tmp;
+    readsLeft=3;
+
+    lock();
+    for(int j=0;j<3;++j){
+        int i = order[j];
+        int fd = fds[i];
+        if( atEOF[i] ){
+            //don't initiate a read
+            vprintf("fd %d is at EOF; not reading from it\n",fd);
+            readsLeft--;
+            if( readsLeft == 0 )
+                f4AllAtEOF();
+        } else {
+            p[i][count[i]+readsize+1] = canary;
+            vprintf("Calling file_read( %d, %p, %d)\n",fd,p[i]+count[i],readsize);
+            file_read(fd, p[i]+count[i], readsize, f4, (void*) i);
+        }
+    }
+    unlock();
+}
+
+static int QUANTUM=8;
+
+
+static void dumpq(const char* b, int bufferlength)
+{
+    for(int j=0;j<QUANTUM ;++j){
+        if( j >= bufferlength )
+            kprintf("   ");
+        else {
+            char c = b[j];
+            kprintf("%02x ", (unsigned)(c) & 0xff );
+        }
+    }
+    kprintf(" | ");
+    for(int j=0;j<QUANTUM ;++j){
+        if( j >= bufferlength ){
+            kprintf(" ");
+        } else {
+            char c = b[j];
+            if( c >= 32 && c <= 126 ){
+                kprintf("%c", c);
+            } else {
+                kprintf(".");
+            }
+        }
+    }
+    return;
+}
+
+static void dumpComparison(const char* b1, const char* b2, int offset, int bufferlength){
+
+    while(bufferlength > 0 ){
+        kprintf("%05d: ",offset);
+        dumpq(b1,bufferlength);
+        if( b2 ){
+            kprintf(" || ");
+            dumpq(b2,bufferlength);
+        }
+        kprintf("\n");
+        b1 += QUANTUM;
+        if(b2)
+            b2 += QUANTUM;
+        bufferlength -= QUANTUM;
+        offset += QUANTUM;
+    }
+}
+
+
+static void compareFiles(const char* buffer1, const char* buffer2, int length, const char* name, int fd)
+{
+    for(int i=0;i<length;i+=QUANTUM){
+        for(int j=0;j<QUANTUM && i+j < length;++j){
+            if( buffer1[i+j] != buffer2[i+j] ){
+
+                int start = i - 30;
+                if(start<0)
+                    start=0;
+                int end=i+30;
+                if( end > length )
+                    end=length;
+                dumpComparison(buffer1,buffer2,start,end-start);
+                kprintf("\ntestsuite line %d: Wrong contents in %s at offset %d from fd %d\n",__LINE__, name,i+j,fd);
+                freeze();
+            }
+        }
+    }
+}
+
+
+
+static void f4( int errorcode, void* buf, unsigned numread, void* data)
+{
+    int i = (int)data;
+    int fd = fds[i];
+
+    if( errorcode != 0 ){
+        kprintf("testsuite line %d: Read error for fd %d: %d\n",__LINE__,fd,errorcode);
+        freeze();
+        return;
+    }
+
+    readsLeft--;
+
+    vprintf("testsuite line %d: Got %d bytes from fd %d\n",__LINE__,numread,fd);
+
+    //if we've hit eof, increment the count
+
+
+    count[i] += numread;
+    vprintf("Have read total of %d bytes from fd %d\n",count[i],fd);
+
+    if( numread == 0 ){
+        if( atEOF[i] ){
+            kprintf("testsuite line %d: Got EOF from the same file twice? %d\n",__LINE__,fd);
+            freeze();
+        }
+        atEOF[i]=1;
+        vprintf("fd %d is at EOF\n",fd);
+    }
+
+    if( numread > readsize ){
+        kprintf("testsuite line %d: Too much data read: Got %d, expected %d or less\n",__LINE__,numread,readsize);
+        freeze();
+    }
+
+    if( count[i] > filesize[i] ){
+        kprintf("testsuite line %d: Did not reach EOF in time: fd %d gave us %d bytes but file has %d bytes\n",
+            __LINE__, fds[i], count[i], filesize[i]
+        );
+        freeze();
+    }
+
+    //if there are outstanding reads, wait on them
+    if( readsLeft > 0 ){
+        return;
+    }
+
+    //if we get here, all three reads have completed
+
+    vprintf("Three reads have completed\n");
+
+    //if we haven't reached EOF on all files, dispatch again
+    if( !atEOF[0] || !atEOF[1] || !atEOF[2] ){
+        initiateOverlappingReads();
+        return;
+    }
+
+    //if we get here, all three files have reached EOF
+
+    f4AllAtEOF();
+}
+
+void f4AllAtEOF()
+{
+    
+    if( count[0] != a6len ){
+        kprintf("testsuite line %d: Read wrong amount of data for article6.txt #1 (fd %d): Got %d, expected %d\n", __LINE__,fds[0], count[0], a6len );
+        freeze();
+    }
+    if( count[1] != a5len ){
+        kprintf("testsuite line %d: Read wrong amount of data for article5.txt (fd %d): Got %d, expected %d\n",__LINE__, fds[1], count[1], a5len );
+        freeze();
+    }
+    if( count[2] != a6len ){
+        kprintf("testsuite line %d: Read wrong amount of data for article6.txt #2 (fd %d): Got %d, expected %d\n",__LINE__, fds[2], count[2], a6len );
+        freeze();
+    }
+
+    
+    kprintf("testsuite line %d: Comparing results of three reads...\n",__LINE__);
+
+    compareFiles( a6a, article6, a6len, "article6.txt", fds[0]);
+    compareFiles( a6b, article6, a6len, "article6.txt", fds[2]);
+    compareFiles( a5, article5, a5len, "article5.txt", fds[1]);
+
+    kprintf("testsuite line %d: All three files are OK\n",__LINE__);
+
+    kprintf("testsuite line %d: Beginning seek test...\n",__LINE__);
+
+    int fd = article5fd;
+    if( file_seek(fd,0,2) != 0 ){
+        kprintf("testsuite line %d: file_seek reported error\n",__LINE__);
+        freeze();
+    }
+    unsigned size;
+    if( file_tell( fd, &size ) != 0 ){
+        kprintf("testsuite line %d: file_tell reported error\n",__LINE__);
+        freeze();
+    }
+    if( size != a5len ){
+        kprintf("testsuite line %d: Seek to end: Reported size as %d but expected %d\n", __LINE__,size,a5len);
+        freeze();
+    }
+
+    doNextSeekTest();
+}
+
+static void doNextSeekTest()
+{
+    ++seekTest;
+    int fd = fds[1];    //article 5
+
+    int i = seekTest;
+    if( seeks[i].whence == -1 ){
+        //done
+        f6();
+    }
+
+    int delta = seeks[i].delta;
+    int whence = seeks[i].whence;
+    int rv = file_seek(fd,delta,whence);
+    vprintf("testsuite: file_seek(%d, %d, %d) -> %d\n", fd,delta,whence,rv);
+
+
+    long long int tempOffset;
+    if( whence == 0 )
+        tempOffset = delta;
+    else if( whence == 1 ){
+        tempOffset = currentOffset;
+        tempOffset += delta;
+    } else if( whence == 2 ){
+        tempOffset = a5len;
+        tempOffset += delta;
+    } else {
+        tempOffset = -1000;
+    }
+
+    if( tempOffset > 0xffffffffLL )
+        tempOffset = -1;
+
+    if( tempOffset < 0 ){
+        if( rv == 0 ){
+            kprintf("testsuite line %d: At offset %lld: Did file_seek(%d, %d, %d) and got success, but should have gotten error\n",
+                __LINE__, currentOffset, fd,delta,whence
+            );
+            freeze();
+        } else {
+            //nothing to do; don't adjust expected offset
+        }
+    } else {
+        if( rv != 0 ){
+            kprintf("testsuite line %d: At offset %lld: Did file_seek(%d, %d, %d) and got error %d\n",
+                __LINE__, currentOffset, fd,delta,whence, rv );
+            freeze();
+        } else {
+            currentOffset = tempOffset;
+        }
+    }
+
+    unsigned newOffset=0x12345;
+    if( file_tell(fd,&newOffset) != 0 ){
+        kprintf("testsuite line %d: file_tell returned error\n",__LINE__);
+        return;
+    }
+
+    if( newOffset != currentOffset ){
+        kprintf("testsuite line %d: file_tell gave incorrect offset: Got %d, expected %lld\n",__LINE__,
+            newOffset,currentOffset);
+        freeze();
+    }
+    static char buf[32];
+    for(int i=0;i<sizeof(buf);i++){
+        buf[i] = 0x42;
+    }
+    vprintf("testsuite: file_read(%d,%p,%d)\n",fd,buf,23);
+    file_read(fd,buf,23,f5,0);
+}
+
+static void f5( int errorcode, void* vbuf, unsigned nr, void* data)
+{
+
+    char* buf = (char*)vbuf;
+
+    if( errorcode){
+        kprintf("testsuite line %d: After seeking, file_read gave error %d\n",__LINE__,errorcode);
+        freeze();
+    }
+
+    vprintf("testsuite: num read=%d\n",nr);
+
+    if( nr > 23 ){
+        kprintf("testsuite line %d: file_read: Read too much: Read %d but max is 23\n",__LINE__,
+            nr );
+        freeze();
+    }
+
+    unsigned maxData;
+    if( currentOffset >= a5len )
+        maxData = 0;
+    else
+        maxData = a5len-currentOffset;
+
+    if( maxData > 23 )
+        maxData = 23;
+
+    if( nr > maxData ){
+        kprintf("testsuite line %d: file_read: Went past EOF\n",__LINE__);
+        freeze();
+    }
+
+    for(int i=23;i<32;++i){
+        if( buf[i] != 0x42 ){
+            kprintf("buf[%d] is %d\n",i,buf[i]);
+
+            dumpComparison(buf,0,0,32);
+            kprintf("testsuite line %d: When reading at offset %lld: file_read touched byte %d but it should not have gone past index 22\n",__LINE__,
+                currentOffset,
+                i);
+            freeze();
+        }
+    }
+
+    compareFiles(buf, article5+currentOffset, maxData, "article5.txt", fds[1] );
+    currentOffset += nr;
+    doNextSeekTest();
+}
+
+
+static void f6(){
+    if( file_tell( fds[1], 0 ) >= 0 ){
+        kprintf("testsuite line %d: file_tell didn't catch bad pointer\n",__LINE__);
+        return;
+    }
+
+    kprintf("\n\n");
+
+    //!!
+    kprintf("All OK!\n");
+    //!!
 
 }

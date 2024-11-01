@@ -1,9 +1,5 @@
 import subprocess
 
-#!!
-REMOVE="article3.txt"
-#!!
-
 def copy(python,imgfile):
     subprocess.check_call([python, "fool.pyz", imgfile,
 "cp","article6.txt","Article7.txt",
@@ -21,6 +17,4 @@ def copy(python,imgfile):
 "cp","billofrights.txt","A449.TXT",
 "cp","billofrights.txt","a449c def ghij klmn opq.txt",
 "cp","article6.txt", "FOO$.T$",
-"cp","+sa","article5.txt", "foo.txt",
-"rm",REMOVE
 ])
