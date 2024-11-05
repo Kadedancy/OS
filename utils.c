@@ -68,10 +68,11 @@ int queue_put(struct Queue* Q, void* data){
         Q->head = n;
         Q->tail = n;
     }
-    Q->tail->next = n;
-    Q->tail = n;
+    else{
+        Q->tail->next = n;
+        Q->tail = n;
+    }
     return SUCCESS;
-
 }
 
 void* queue_get(struct Queue* Q){

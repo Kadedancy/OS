@@ -29,6 +29,13 @@ static void enable_busmaster(u32 addr) {
 }
 
 void disk_init() {
+    physicalRegionDescriptor = (struct PhysicalRegionDescriptor*) kmalloc(sizeof(struct PhysicalRegionDescriptor));
+    unsigned seg1 = ((unsigned)(physicalRegionDescriptor))/65536;
+    unsigned seg2 = ((unsigned)(physicalRegionDescriptor)+sizeof(physicalRegionDescriptor))/65536;
+    if(seg1 != seg2)
+        panic("Physical region descriptor crosses 64KB boundary");
+    if(seg1 % 4)
+        panic("kmalloc gave address that is not multiple of 4");
     u32 addr = pci_scan_for_device(PCI_DISK_CLASS,
                                     PCI_DISK_SUBCLASS);
     if(addr == 0) {
@@ -101,13 +108,7 @@ static void dispatch_request(struct Request* req) {
     outb(dmaBase,0);    //disable DMA
     outb(dmaBase,8);    //8=read,0=write
 
-    physicalRegionDescriptor = (struct PhysicalRegionDescriptor*) kmalloc(sizeof(struct PhysicalRegionDescriptor));
-    unsigned seg1 = ((unsigned)(physicalRegionDescriptor))/65536;
-    unsigned seg2 = ((unsigned)(physicalRegionDescriptor)+sizeof(physicalRegionDescriptor))/65536;
-    if(seg1 != seg2)
-        panic("Physical region descriptor crosses 64KB boundary");
-    if(seg1 % 4)
-        panic("kmalloc gave address that is not multiple of 4");
+
 
     physicalRegionDescriptor->address = req->buffer;
     physicalRegionDescriptor->byteCount = req->count*512;

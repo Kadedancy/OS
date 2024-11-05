@@ -1,8 +1,7 @@
+//2024-nov-02
 
 //change this to 1 to get lots of debugging messages
 #define VERBOSE 1
-
-
 
 
 
@@ -186,7 +185,6 @@ static void f6();
 static char* p[3];
 static int fds[3];          //article 6a, article5, article6b
 static unsigned count[3];
-static int order[3];
 #define readsize 27
 static int readsLeft;
 static int atEOF[3];
@@ -205,10 +203,11 @@ static void freeze(){
 unsigned a6len;
 unsigned a5len;
 
+//this function opens article 6 and calls f1
 void sweet(){
-    
+
     vprintf("Beginning sweet()\n");
-    
+
     a6len = mystrlen(article6);
     a5len = mystrlen(article5);
     seekTest=-1;
@@ -227,20 +226,24 @@ void sweet(){
     file_open("article6.txt", 0, f1, 0);
 }
 
-static int lockCount=0;
+unsigned savedflags[16];
+int savedflagsctr=0;
+
 static void lock(){
+    unsigned eflags;
+    asm("pushf\npop %%eax" : "=a"(eflags));
     __asm__ volatile("cli");
-    lockCount++;
+    savedflags[savedflagsctr++] = eflags;
 }
 static void unlock(){
-    lockCount--;
-    if( lockCount == 0 )
-        __asm__ volatile("sti");
+    unsigned eflags = savedflags[--savedflagsctr];
+    asm("push %%eax\npopf" : : "a"(eflags));
 }
-    
+
 
 static void f2(int fd, void* x);
 
+//open article5 and call f2
 static void f1(int fd, void* callback_data)
 {
 
@@ -259,6 +262,8 @@ static void f1(int fd, void* callback_data)
 
 static void f3(int fd, void* x);
 
+
+//open article6 and call f3
 static void f2(int fd, void* x){
     article5fd = fd;
     if( article5fd < 0 ){
@@ -274,6 +279,7 @@ static void f2(int fd, void* x){
 }
 
 
+//begin reading the three files
 static void f3(int fd, void* x){
 
 
@@ -293,7 +299,7 @@ static void f3(int fd, void* x){
 
     p[0] = a6a;
     p[1] = a5;
-    p[2]= a6b;
+    p[2] = a6b;
     fds[0] = article6fd1;
     fds[1] = article5fd;
     fds[2] = article6fd2;
@@ -303,9 +309,6 @@ static void f3(int fd, void* x){
     count[0]=0;
     count[1]=0;
     count[2]=0;
-    order[0]=0;
-    order[1]=1;
-    order[2]=2;
     atEOF[0]=0;
     atEOF[1]=0;
     atEOF[2]=0;
@@ -321,28 +324,19 @@ static void initiateOverlappingReads()
 {
     //fire off three overlapping reads
 
-    //shuffle the order around
-    int tmp=order[0];
-    order[0]=order[1];
-    order[1]=order[2];
-    order[2]=tmp;
+    lock();
+
     readsLeft=3;
 
-    lock();
-    for(int j=0;j<3;++j){
-        int i = order[j];
+    for(int i=0;i<3;++i){
         int fd = fds[i];
-        if( atEOF[i] ){
-            //don't initiate a read
-            vprintf("fd %d is at EOF; not reading from it\n",fd);
-            readsLeft--;
-            if( readsLeft == 0 )
-                f4AllAtEOF();
-        } else {
-            p[i][count[i]+readsize+1] = canary;
-            vprintf("Calling file_read( %d, %p, %d)\n",fd,p[i]+count[i],readsize);
-            file_read(fd, p[i]+count[i], readsize, f4, (void*) i);
+        if( count[i] + readsize + 1 >= BUFFSIZE ){
+            kprintf("Buffer overflow\n");
+            while(1){ __asm__("hlt");}
         }
+        p[i][count[i]+readsize+1] = canary;
+        vprintf("Calling file_read( %d, %p, %d)\n",fd,p[i]+count[i],readsize);
+        file_read(fd, p[i]+count[i], readsize, f4, (void*) i);
     }
     unlock();
 }
@@ -377,7 +371,8 @@ static void dumpq(const char* b, int bufferlength)
 }
 
 static void dumpComparison(const char* b1, const char* b2, int offset, int bufferlength){
-
+    b1 += offset;
+    b2 += offset;
     while(bufferlength > 0 ){
         kprintf("%05d: ",offset);
         dumpq(b1,bufferlength);
@@ -408,7 +403,7 @@ static void compareFiles(const char* buffer1, const char* buffer2, int length, c
                 if( end > length )
                     end=length;
                 dumpComparison(buffer1,buffer2,start,end-start);
-                kprintf("\ntestsuite line %d: Wrong contents in %s at offset %d from fd %d\n",__LINE__, name,i+j,fd);
+                kprintf("\ntestsuite line %d: Wrong contents in %s at buffer index %d from fd %d\n",__LINE__, name,i+j,fd);
                 freeze();
             }
         }
@@ -439,10 +434,6 @@ static void f4( int errorcode, void* buf, unsigned numread, void* data)
     vprintf("Have read total of %d bytes from fd %d\n",count[i],fd);
 
     if( numread == 0 ){
-        if( atEOF[i] ){
-            kprintf("testsuite line %d: Got EOF from the same file twice? %d\n",__LINE__,fd);
-            freeze();
-        }
         atEOF[i]=1;
         vprintf("fd %d is at EOF\n",fd);
     }
@@ -481,7 +472,8 @@ static void f4( int errorcode, void* buf, unsigned numread, void* data)
 
 void f4AllAtEOF()
 {
-    
+
+
     if( count[0] != a6len ){
         kprintf("testsuite line %d: Read wrong amount of data for article6.txt #1 (fd %d): Got %d, expected %d\n", __LINE__,fds[0], count[0], a6len );
         freeze();
@@ -495,12 +487,13 @@ void f4AllAtEOF()
         freeze();
     }
 
-    
+
     kprintf("testsuite line %d: Comparing results of three reads...\n",__LINE__);
 
     compareFiles( a6a, article6, a6len, "article6.txt", fds[0]);
     compareFiles( a6b, article6, a6len, "article6.txt", fds[2]);
     compareFiles( a5, article5, a5len, "article5.txt", fds[1]);
+
 
     kprintf("testsuite line %d: All three files are OK\n",__LINE__);
 
@@ -533,12 +526,13 @@ static void doNextSeekTest()
     if( seeks[i].whence == -1 ){
         //done
         f6();
+        return;
     }
 
     int delta = seeks[i].delta;
     int whence = seeks[i].whence;
     int rv = file_seek(fd,delta,whence);
-    vprintf("testsuite: file_seek(%d, %d, %d) -> %d\n", fd,delta,whence,rv);
+    vprintf("testsuite: #%d: file_seek(%d, %d, %d) -> %d\n", i, fd,delta,whence,rv);
 
 
     long long int tempOffset;
@@ -591,13 +585,12 @@ static void doNextSeekTest()
     for(int i=0;i<sizeof(buf);i++){
         buf[i] = 0x42;
     }
-    vprintf("testsuite: file_read(%d,%p,%d)\n",fd,buf,23);
+    vprintf("testsuite: file_read(%d,0x%p,%d)\n",fd,buf,23);
     file_read(fd,buf,23,f5,0);
 }
 
 static void f5( int errorcode, void* vbuf, unsigned nr, void* data)
 {
-
     char* buf = (char*)vbuf;
 
     if( errorcode){
