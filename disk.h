@@ -88,7 +88,7 @@ struct VBR{
 typedef void (*disk_metadata_callback_t)(void);
 void disk_read_metadata( disk_metadata_callback_t kmain_callback );
 u32 clusterNumberToSectorNumber( u32 clnum );
-void readRoot();
+void do_this();
 
 // Root directory items
 #pragma pack(push,1)
@@ -123,3 +123,4 @@ struct LFNEntry {
 #pragma pack(pop)
 
 void parseFilename(struct DirEntry* entry, char* buffer);
+u32* mrFat();

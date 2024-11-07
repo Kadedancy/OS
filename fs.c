@@ -295,8 +295,14 @@ void file_read( int fd,void* buf,unsigned count,file_read_callback_t callback, v
     ri->num_requested=count;
     ri->callback=callback;
     ri->callback_data=callback_data;
-    unsigned sectornum = clusterNumberToSectorNumber(file_table[fd].firstCluster);
-    disk_read_sectors( sectornum, vbr.sectors_per_cluster,file_read_part_2,ri);
+    unsigned bytesPerCluster = vbr.bytes_per_sector * vbr.sectors_per_cluster;
+    unsigned clustersToSkip = file_table[fd].offset / bytesPerCluster;
+    u32* fat = mrFat();
+    unsigned c = file_table[fd].firstCluster;
+    for(unsigned i = 0; i < clustersToSkip; i++)
+        c = fat[c];
+        
+    disk_read_sectors(clusterNumberToSectorNumber(c), vbr.sectors_per_cluster, file_read_part_2, ri);
 }
 
 void file_write( int fd, void* buf, unsigned count,  file_write_callback_t callback, void* callback_data)

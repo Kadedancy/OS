@@ -3,7 +3,7 @@
 
 static struct IDTEntry idt[NUM_INTERRUPTS];
 extern void* lowlevel_addresses[];
-static struct GDTEntry gdt[3];
+static struct GDTEntry gdt[6];
 
 void gdt_init(){
 
