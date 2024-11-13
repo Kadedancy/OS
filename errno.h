@@ -7,3 +7,5 @@
 #define EMFILE -5
 #define ENOSYS -6
 #define EOF -7
+#define ENODATA -8
+#define ENOEXEC -9

@@ -1,33 +1,6 @@
 #include "exec.h"
-#include "fs.h"
-/*
-#define SECTION_CODE (1<<5)
-#define SECTION_DATA (1<<6)
-#define SECTION_UNINITIALIZED_DATA (1<<7)
-#define SECTION_READABLE (1<<30)
-#define SECTION_WRITABLE (1<<31)
-#define EXE_BASE 0x400000
-#define EXE_STACK 0x800000
 
-struct ReadFullyInfo{
-    int fd;             //file descriptor
-    char* buf;          //destination buffer
-    unsigned readSoFar; //how many bytes we've read so far
-    unsigned capacity;  //buffer capacity: number to read
-    file_read_callback_t callback;  //callback when done reading
-    void* callback_data;        //data for callback
-};
-
-struct ExecInfo{
-    int fd;
-    unsigned loadAddress;
-    exec_callback_t callback;
-    void* callback_data;
-    ...more fields to be added...
-};
-
-void file_read_fully2(int errorcode, void* buf, unsigned numread, void* callback_data)
-{
+void file_read_fully2(int errorcode, void* buf, unsigned numread, void* callback_data){
     struct ReadFullyInfo* rfi = (struct ReadFullyInfo*)callback_data;
 
     if( errorcode ){
@@ -66,7 +39,7 @@ void file_read_fully(int fd, void* buf, unsigned count,file_read_callback_t call
     rfi->callback=callback;
     rfi->callback_data=callback_data;
 
-    file_read( fd, buf, count, file_read_fully2, rf);
+    file_read( fd, buf, count, file_read_fully2, rfi);
 }
 
 void exec_transfer_control(int errorcode,
@@ -80,13 +53,29 @@ void exec_transfer_control(int errorcode,
     u32 c = EXE_STACK;
     u32 b = entryPoint;
     asm volatile(
-        "mov %%ecx, %%esp\n"
-        "jmp *%%ebx\n"
-        : "+c"(c), "+b"(b) );
+        "mov $(32|3),%%eax\n"   //ring 3 GDT data segment
+        "mov %%ax,%%ds\n"       //ring 3 GDT data segment
+        "mov %%ax,%%es\n"       //ring 3 GDT data segment
+        "mov %%ax,%%fs\n"       //ring 3 GDT data segment
+        "mov %%ax,%%gs\n"       //ring 3 GDT data segment
+        "pushl $(32|3)\n"       //ss, ring 3 GDT data segment
+        "push %%ecx\n"          //esp
+        "push $0x202\n"         //eflags
+        "pushl $(24|3)\n"       //cs, ring 3 GDT code segment
+        "pushl %%ebx\n"         //eip
+        "xor %%eax,%%eax\n"     //clear register
+        "xor %%ebx,%%ebx\n"     //clear register
+        "xor %%ecx,%%ecx\n"     //clear register
+        "xor %%edx,%%edx\n"     //clear register
+        "xor %%esi,%%esi\n"     //clear register
+        "xor %%edi,%%edi\n"     //clear register
+        "xor %%ebp,%%ebp\n"     //clear register
+        "iret\n"
+        : "+c"(c), "+b"(b)
+    );
 }
 
-void doneLoading(struct ExecInfo* ei)
-{
+void doneLoading(struct ExecInfo* ei){
     u32 entryPoint = ei->peHeader.optionalHeader.imageBase +
                      ei->peHeader.optionalHeader.entryPoint;
     exec_callback_t callback = ei->callback;
@@ -98,8 +87,7 @@ void doneLoading(struct ExecInfo* ei)
 }
 
 
-void exec6( int errorcode, void* buf, unsigned nr, void* callback_data)
-{
+void exec6( int errorcode, void* buf, unsigned nr, void* callback_data){
     struct ExecInfo* ei = (struct ExecInfo*) callback_data;
 
     if( errorcode ){
@@ -115,7 +103,6 @@ void exec6( int errorcode, void* buf, unsigned nr, void* callback_data)
 }
 
 void loadNextSection(struct ExecInfo* ei){
-
     //shorten things up
     int i = ei->numSectionsLoaded;
 
@@ -129,10 +116,27 @@ void loadNextSection(struct ExecInfo* ei){
     if( flags & (SECTION_CODE | SECTION_DATA | SECTION_UNINITIALIZED_DATA) ){
         char* p = (char*) (ei->loadAddress);
         p += s->address;
-        int numToLoad = ...smaller of s->sizeInRAM and s->sizeOnDisk
-        ...zero out bytes from p+numToLoad to p+sizeInRAM-1 inclusive...
-        ...file_seek to s->dataPointer...
-        ...check for seek error...
+
+        int numToLoad = 0;
+        if(s->sizeInRAM <= s->sizeOnDisk){
+            numToLoad = s->sizeInRAM;
+        }
+        else{
+            numToLoad = s->sizeOnDisk;
+        }
+
+        kmemset(p + numToLoad, 0, s->sizeInRAM - numToLoad);
+
+        // Seek to the data pointer for the section in the file
+        int seek_result = file_seek(ei->fd, s->dataPointer, SEEK_SET);
+        
+        // Check for seek error
+        if (seek_result < 0) {
+            ei->callback(seek_result, 0, ei->callback_data);
+            file_close(ei->fd, NULL, NULL);
+            kfree(ei);
+            return;
+        }
         file_read_fully( ei->fd, p, numToLoad, exec6, ei );
     } 
     else {
@@ -141,8 +145,7 @@ void loadNextSection(struct ExecInfo* ei){
     }
 }
 
-void exec5( int errorcode, void* buf, unsigned numread, void* callback_data)
-{
+void exec5( int errorcode, void* buf, unsigned numread, void* callback_data){
      struct ExecInfo* ei = (struct ExecInfo*)callback_data;
      if(errorcode){
          ei->callback(errorcode, 0, ei->callback_data);
@@ -155,8 +158,7 @@ void exec5( int errorcode, void* buf, unsigned numread, void* callback_data)
     loadNextSection(ei);
  }
 
-void exec4( int errorcode, void* buf, unsigned numread, void* callback_data)
-{
+void exec4( int errorcode, void* buf, unsigned numread, void* callback_data){
     struct ExecInfo* ei = (struct ExecInfo*)callback_data;
     if(errorcode){
         ei->callback(errorcode, 0, ei->callback_data);
@@ -171,7 +173,7 @@ void exec4( int errorcode, void* buf, unsigned numread, void* callback_data)
         return;
     }
     if( ei->peHeader.optionalHeader.imageBase != EXE_BASE ){
-        ei->callback(EFAULT, 0, ei->callback_data);
+        ei->callback(ENOEXEC, 0, ei->callback_data);
         file_close(ei->fd, NULL, NULL);
         kfree(ei);
         return;
@@ -185,8 +187,7 @@ void exec4( int errorcode, void* buf, unsigned numread, void* callback_data)
     file_read_fully(ei->fd, ei->sectionHeaders,ei->peHeader.coffHeader.numSections * sizeof(struct SectionHeader),exec5, ei );
 }
 
-void exec3( int errorcode, void* buf, unsigned numread, void* callback_data)
-{
+void exec3( int errorcode, void* buf, unsigned numread, void* callback_data){
     struct ExecInfo* ei = (struct ExecInfo*)callback_data;
     if(errorcode){
         ei->callback(errorcode, 0, ei->callback_data);
@@ -212,8 +213,7 @@ void exec3( int errorcode, void* buf, unsigned numread, void* callback_data)
                      exec4, ei );
 }
 
-void exec2( int fd, void* callback_data)
-{
+void exec2( int fd, void* callback_data){
     struct ExecInfo* ei = (struct ExecInfo*)callback_data;
     if(fd < 0){
         ei->callback(fd, 0, callback_data );
@@ -230,10 +230,9 @@ void exec(  const char* fname,
             unsigned loadAddress,
             exec_callback_t callback,
             void* callback_data ){
-
     struct ExecInfo* ei = kmalloc(sizeof(struct ExecInfo));
     if(!ei){
-        callback(ENOMEM, NULL, callback_data);
+        callback(ENOMEM, 0, callback_data);
         return;
     }
     ei->callback=callback;
@@ -241,4 +240,3 @@ void exec(  const char* fname,
     ei->callback_data=callback_data;
     file_open(fname, 0, exec2, ei );    //0=flags
 }
-*/

@@ -1,4 +1,10 @@
-/*
+#pragma once
+#include "utils.h"
+#include "memory.h"
+#include "errno.h"
+#include "kprintf.h"
+#include "fs.h"
+
 #pragma pack(push,1)
 struct DOSHeader{
     char magic[2];          //'MZ'
@@ -21,17 +27,7 @@ struct DOSHeader{
     char reserved2[20];
     u32 peOffset;           //we need this
 };
-#pragma pack(pop)
 
-#pragma pack(push,1)
-struct PEHeader{
-    char magic[4];
-    struct COFFHeader coffHeader;
-    struct OptionalHeader optionalHeader;
-};
-#pragma pack(pop)
-
-#pragma pack(push,1)
 struct COFFHeader{
      u16 machineType; //0x14c=i386, 0x8664=x64,
                       //0x1c0=arm32, 0xaa64=arm64
@@ -42,9 +38,12 @@ struct COFFHeader{
      u16 optionalHeaderSize;
      u16 flags;               //bit 2=exe, bit 14=dll
 };
-#pragma pack(pop)
 
-#pragma pack(push,1)
+struct PEDirectory{
+    u32 offset;
+    u32 size;
+};
+
 struct OptionalHeader{
     u16 magic;             //0x010b=32 bit, 0x020b=64 bit
     u16 linkerVersion;
@@ -75,16 +74,13 @@ struct OptionalHeader{
     u32 numDirectories;     //always 16
     struct PEDirectory directories[16];
 };
-#pragma pack(pop)
 
-#pragma pack(push,1)
-struct PEDirectory{
-    u32 offset;
-    u32 size;
+struct PEHeader{
+    char magic[4];
+    struct COFFHeader coffHeader;
+    struct OptionalHeader optionalHeader;
 };
-#pragma pack(pop)
 
-#pragma pack(push,1)
 struct SectionHeader{
     char name[8];
     u32 sizeInRAM;     //size in RAM
@@ -99,7 +95,47 @@ struct SectionHeader{
 };
 #pragma pack(pop)
 
+#define SECTION_CODE (1<<5)
+#define SECTION_DATA (1<<6)
+#define SECTION_UNINITIALIZED_DATA (1<<7)
+#define SECTION_READABLE (1<<30)
+#define SECTION_WRITABLE (1<<31)
+#define EXE_BASE 0x400000
+#define EXE_STACK 0x800000
+#define MAX_SECTIONS 32
+
 typedef void (*exec_callback_t)(int errorcode, unsigned entryPoint, void* callback_data);
+
+struct ReadFullyInfo{
+    int fd;             //file descriptor
+    char* buf;          //destination buffer
+    unsigned readSoFar; //how many bytes we've read so far
+    unsigned capacity;  //buffer capacity: number to read
+    file_read_callback_t callback;  //callback when done reading
+    void* callback_data;        //data for callback
+};
+
+struct ExecInfo{
+    int fd;
+    unsigned loadAddress;
+    exec_callback_t callback;
+    void* callback_data;
+    struct DOSHeader dosHeader;
+    struct PEHeader peHeader;
+    struct SectionHeader sectionHeaders[MAX_SECTIONS];
+    int numSectionsLoaded;
+};
+
 void exec( const char* fname, unsigned loadAddress, exec_callback_t callback, void* callback_data );
 void file_read_fully(int fd, void* buf, unsigned count,file_read_callback_t callback,void* callback_data);
-*/
+void file_read_fully2(int errorcode, void* buf, unsigned numread, void* callback_data);
+void exec_transfer_control(int errorcode,
+                           u32 entryPoint,
+                           void* callback_data);
+void doneLoading(struct ExecInfo* ei);
+void loadNextSection(struct ExecInfo* ei);
+void exec6( int errorcode, void* buf, unsigned nr, void* callback_data);
+void exec5( int errorcode, void* buf, unsigned numread, void* callback_data);
+void exec4( int errorcode, void* buf, unsigned numread, void* callback_data);
+void exec3( int errorcode, void* buf, unsigned numread, void* callback_data);
+void exec2( int fd, void* callback_data);

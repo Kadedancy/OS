@@ -132,3 +132,5 @@ void kstrcpy(char* d, const char* s);
 int kstrequal(const char* a , const char* b);
 char toupper(char c);
 char tolower(char c);
+int kmemcmp(const void* ptr1, const void* ptr2, unsigned int num);
+void* kmemset(void* ptr, int value, unsigned int num);

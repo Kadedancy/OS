@@ -56,6 +56,13 @@ struct LIDT{
     struct IDTEntry* addr;  //table start
 };
 
+struct TaskStateSegment{
+    u32 mustBeZero;
+    u32 esp;
+    u32 ss;     //stack segment
+    u32 unused[15];
+};
+
 typedef void (*InterruptHandler)(struct InterruptContext* ctx);
 static InterruptHandler handlers[NUM_INTERRUPTS][MAX_HANDLERS];
 void register_interrupt_handler(unsigned interrupt,InterruptHandler func);

@@ -5,6 +5,12 @@ static struct IDTEntry idt[NUM_INTERRUPTS];
 extern void* lowlevel_addresses[];
 static struct GDTEntry gdt[6];
 
+static struct TaskStateSegment tss = {
+    0,
+    0x10000,    //64KB mark: Stack address
+    16          //offset of GDT entry for stack segment
+};
+
 void gdt_init(){
 
     gdt[0].limitBits0to15 = 0;
@@ -40,12 +46,47 @@ void gdt_init(){
                     SEGMENT_LIMIT_32_BIT |
                     SEGMENT_32_BIT;
 
+    gdt[3].baseBits0to15=0;
+    gdt[3].baseBits16to23=0;
+    gdt[3].baseBits24to31=0;
+    gdt[3].limitBits0to15=0xffff;
+    gdt[3].flags = SEGMENT_TYPE_CODE |
+                   SEGMENT_IS_CODE_OR_DATA |
+                   SEGMENT_RING_3 |
+                   SEGMENT_PRESENT ;
+    gdt[3].flagsAndLimitBits16to19 =
+                    SEGMENT_LIMIT_HIGH_NIBBLE |
+                    SEGMENT_LIMIT_32_BIT |
+                    SEGMENT_32_BIT;
+
+    gdt[4].baseBits0to15=0;
+    gdt[4].baseBits16to23=0;
+    gdt[4].baseBits24to31=0;
+    gdt[4].limitBits0to15=0xffff;
+    gdt[4].flags = SEGMENT_TYPE_DATA |
+                   SEGMENT_IS_CODE_OR_DATA |
+                   SEGMENT_RING_3 |
+                   SEGMENT_PRESENT ;
+    gdt[4].flagsAndLimitBits16to19 =
+                    SEGMENT_LIMIT_HIGH_NIBBLE |
+                    SEGMENT_LIMIT_32_BIT |
+                    SEGMENT_32_BIT;
+
+    u32 tssAddr = (u32)(&tss);
+    gdt[5].baseBits0to15=tssAddr & 0xffff;
+    gdt[5].baseBits16to23=(tssAddr>>16) & 0xff;
+    gdt[5].baseBits24to31=(tssAddr>>24) & 0xff;
+    gdt[5].limitBits0to15=sizeof(tss)-1;
+    gdt[5].flags = 0x89;
+    gdt[5].flagsAndLimitBits16to19 = 0;
+
     struct LGDT lgdt;
     lgdt.size = sizeof(gdt);
     lgdt.addr = &gdt[0];
     void* tmp = &lgdt;
     asm volatile (
          "lgdt (%%eax)\n"       //load gdt register
+         "ltr %%bx\n"           //new!
          "mov $16,%%eax\n"      //set eax to 16: Offset to gdt[2]
          "mov %%eax,%%ds\n"     //store 16 to ds
          "mov %%eax,%%es\n"     //store 16 to es
@@ -56,7 +97,7 @@ void gdt_init(){
          "reset_cs:\n"
          "nop\n"                //no operation
          : "+a"(tmp)
-         :
+         : "b"( 40 | 3 )
          : "memory"
     );
 }
@@ -134,7 +175,8 @@ void illegalOpcode(struct InterruptContext* ctx){
 }
 
 void generalFault(struct InterruptContext* ctx){
-    kprintf("General Fault\n");
+    kprintf("General protection fault at 0x%x\n", ctx->eip);
+    while(1);
 }
 
 void register_interrupt_handler(unsigned interrupt,InterruptHandler func){

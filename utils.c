@@ -114,3 +114,27 @@ char tolower(char c) {
 char toupper(char c) {
     return (c >= 'a' && c <= 'z') ? c-32 : c;
 }
+
+//ChatGpt prompt: Implement kmemcmp functionality
+int kmemcmp(const void* ptr1, const void* ptr2, unsigned int num) {
+    const unsigned char* p1 = (const unsigned char*)ptr1;
+    const unsigned char* p2 = (const unsigned char*)ptr2;
+
+    for (unsigned int i = 0; i < num; i++) {
+        if (p1[i] != p2[i]) {
+            return (p1[i] - p2[i]);
+        }
+    }
+
+    return 0;
+}
+
+void* kmemset(void* ptr, int value, unsigned int num) {
+    unsigned char* p = (unsigned char*)ptr;
+
+    for (unsigned int i = 0; i < num; i++) {
+        p[i] = (unsigned char)value;
+    }
+
+    return ptr;
+}
