@@ -1,5 +1,6 @@
 #include "interrupts.h"
 #include "console.h"
+#include "syscall.h"
 
 static struct IDTEntry idt[NUM_INTERRUPTS];
 extern void* lowlevel_addresses[];
@@ -223,6 +224,7 @@ void interrupt_init(){
         idt[i].zero = 0;       
         idt[i].flags = 0x8e;  
     }
+    idt[48].flags = 0xee;  
 
     outb(0x20, 0x11);
     outb(0x21, 32);
@@ -247,6 +249,7 @@ void interrupt_init(){
     register_interrupt_handler(13, generalFault);
     //register_interrupt_handler(32, timer0Handler);
     register_interrupt_handler(32, timer40Handler);
+    register_interrupt_handler( 48, syscall_handler );
 }
 
 

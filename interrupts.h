@@ -4,6 +4,7 @@
 #include "kprintf.h"
 #include "timer.h"
 
+
 #define SEGMENT_PRESENT 0x80
 #define SEGMENT_RING_0 0x00
 #define SEGMENT_RING_3 0x60
