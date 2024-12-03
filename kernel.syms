@@ -1,14 +1,14 @@
  kernel
 
- Timestamp is 6745ffb9 (Tue Nov 26 12:04:57 2024)
+ Timestamp is 674f2474 (Tue Dec  3 10:32:04 2024)
 
  Preferred load address is 0000000000100000
 
  Start         Length     Name                   Class
- 0001:00000000 000081bcH .text                   CODE
+ 0001:00000000 000084acH .text                   CODE
  0002:00000000 0000b489H .rdata                  DATA
  0003:00000000 000002d0H .data                   DATA
- 0003:000002d0 000274a0H .bss                    DATA
+ 0003:000002d0 00029454H .bss                    DATA
 
   Address         Publics by Value              Rva+Base               Lib:Object
 
@@ -108,57 +108,63 @@
  0001:000037e0       _interrupt_enable          00000000001047e0     interrupts.c.o
  0001:000037f0       _timer0Handler             00000000001047f0     interrupts.c.o
  0001:00003820       _timer40Handler            0000000000104820     interrupts.c.o
- 0001:00003860       _interrupt_init            0000000000104860     interrupts.c.o
- 0001:00003ab0       _start                     0000000000104ab0     kmain.c.o
- 0001:00003ac0       _kmain2                    0000000000104ac0     kmain.c.o
- 0001:00003b00       _kmain                     0000000000104b00     kmain.c.o
- 0001:00003b70       _va_end                    0000000000104b70     kprintf.c.o
- 0001:00003b80       _stbsp_set_separators      0000000000104b80     kprintf.c.o
- 0001:00003ba0       _stbsp_vsprintfcb          0000000000104ba0     kprintf.c.o
- 0001:000063d0       _stbsp_sprintf             00000000001073d0     kprintf.c.o
- 0001:00006460       _stbsp_vsnprintf           0000000000107460     kprintf.c.o
- 0001:00006690       _stbsp_snprintf            0000000000107690     kprintf.c.o
- 0001:00006700       _stbsp_vsprintf            0000000000107700     kprintf.c.o
- 0001:00006750       _kprintf                   0000000000107750     kprintf.c.o
- 0001:00006800       _ksprintf                  0000000000107800     kprintf.c.o
- 0001:00006860       _ksnprintf                 0000000000107860     kprintf.c.o
- 0001:000068d0       _initHeader                00000000001078d0     memory.c.o
- 0001:000069f0       _memory_init               00000000001079f0     memory.c.o
- 0001:00006a50       _removeFirstNode           0000000000107a50     memory.c.o
- 0001:00006b00       _removeNode                0000000000107b00     memory.c.o
- 0001:00006be0       _prependNode               0000000000107be0     memory.c.o
- 0001:00006c60       _splitBlock                0000000000107c60     memory.c.o
- 0001:00006d00       _kmalloc                   0000000000107d00     memory.c.o
- 0001:00006e20       _getBuddy                  0000000000107e20     memory.c.o
- 0001:00006e70       _kfree                     0000000000107e70     memory.c.o
- 0001:00006f60       _pci_read_addr             0000000000107f60     pci.c.o
- 0001:00006fb0       _pci_write_addr            0000000000107fb0     pci.c.o
- 0001:00007000       _pci_read                  0000000000108000     pci.c.o
- 0001:00007060       _pci_scan_for_device       0000000000108060     pci.c.o
- 0001:00007160       _serial_init               0000000000108160     serial.c.o
- 0001:00007170       _serial_putc               0000000000108170     serial.c.o
- 0001:000071c0       _syscall_handler           00000000001081c0     syscall.c.o
- 0001:00007370       _sweet                     0000000000108370     testsuite.c.o
- 0001:00007bf0       _timer_init                0000000000108bf0     timer.c.o
- 0001:00007cb0       _get_uptime                0000000000108cb0     timer.c.o
- 0001:00007cd0       _inc_ticks                 0000000000108cd0     timer.c.o
- 0001:00007cf0       _outb                      0000000000108cf0     utils.c.o
- 0001:00007d10       _inb                       0000000000108d10     utils.c.o
- 0001:00007d30       _kmemcpy                   0000000000108d30     utils.c.o
- 0001:00007d90       _halt                      0000000000108d90     utils.c.o
- 0001:00007da0       _inw                       0000000000108da0     utils.c.o
- 0001:00007dc0       _outw                      0000000000108dc0     utils.c.o
- 0001:00007de0       _inl                       0000000000108de0     utils.c.o
- 0001:00007e00       _outl                      0000000000108e00     utils.c.o
- 0001:00007e20       _queue_put                 0000000000108e20     utils.c.o
- 0001:00007eb0       _queue_get                 0000000000108eb0     utils.c.o
- 0001:00007f20       _kstrlen                   0000000000108f20     utils.c.o
- 0001:00007f60       _kstrcpy                   0000000000108f60     utils.c.o
- 0001:00007fa0       _kstrequal                 0000000000108fa0     utils.c.o
- 0001:00008040       _tolower                   0000000000109040     utils.c.o
- 0001:00008090       _toupper                   0000000000109090     utils.c.o
- 0001:000080e0       _kmemcmp                   00000000001090e0     utils.c.o
- 0001:00008170       _kmemset                   0000000000109170     utils.c.o
+ 0001:00003860       _page_fault_handler        0000000000104860     interrupts.c.o
+ 0001:00003960       _interrupt_init            0000000000104960     interrupts.c.o
+ 0001:00003bd0       _start                     0000000000104bd0     kmain.c.o
+ 0001:00003be0       _kmain2                    0000000000104be0     kmain.c.o
+ 0001:00003c20       _kmain                     0000000000104c20     kmain.c.o
+ 0001:00003ca0       _va_end                    0000000000104ca0     kprintf.c.o
+ 0001:00003cb0       _stbsp_set_separators      0000000000104cb0     kprintf.c.o
+ 0001:00003cd0       _stbsp_vsprintfcb          0000000000104cd0     kprintf.c.o
+ 0001:00006500       _stbsp_sprintf             0000000000107500     kprintf.c.o
+ 0001:00006590       _stbsp_vsnprintf           0000000000107590     kprintf.c.o
+ 0001:000067c0       _stbsp_snprintf            00000000001077c0     kprintf.c.o
+ 0001:00006830       _stbsp_vsprintf            0000000000107830     kprintf.c.o
+ 0001:00006880       _kprintf                   0000000000107880     kprintf.c.o
+ 0001:00006930       _ksprintf                  0000000000107930     kprintf.c.o
+ 0001:00006990       _ksnprintf                 0000000000107990     kprintf.c.o
+ 0001:00006a00       _initHeader                0000000000107a00     memory.c.o
+ 0001:00006b20       _memory_init               0000000000107b20     memory.c.o
+ 0001:00006b80       _removeFirstNode           0000000000107b80     memory.c.o
+ 0001:00006c30       _removeNode                0000000000107c30     memory.c.o
+ 0001:00006d10       _prependNode               0000000000107d10     memory.c.o
+ 0001:00006d90       _splitBlock                0000000000107d90     memory.c.o
+ 0001:00006e30       _kmalloc                   0000000000107e30     memory.c.o
+ 0001:00006f50       _getBuddy                  0000000000107f50     memory.c.o
+ 0001:00006fa0       _kfree                     0000000000107fa0     memory.c.o
+ 0001:00007090       _pageInit                  0000000000108090     memory.c.o
+ 0001:000071e0       _set_page_table            00000000001081e0     memory.c.o
+ 0001:000071f0       _get_page_table            00000000001081f0     memory.c.o
+ 0001:00007210       _enable_paging             0000000000108210     memory.c.o
+ 0001:00007230       _get_faulting_address      0000000000108230     memory.c.o
+ 0001:00007250       _pci_read_addr             0000000000108250     pci.c.o
+ 0001:000072a0       _pci_write_addr            00000000001082a0     pci.c.o
+ 0001:000072f0       _pci_read                  00000000001082f0     pci.c.o
+ 0001:00007350       _pci_scan_for_device       0000000000108350     pci.c.o
+ 0001:00007450       _serial_init               0000000000108450     serial.c.o
+ 0001:00007460       _serial_putc               0000000000108460     serial.c.o
+ 0001:000074b0       _syscall_handler           00000000001084b0     syscall.c.o
+ 0001:00007660       _sweet                     0000000000108660     testsuite.c.o
+ 0001:00007ee0       _timer_init                0000000000108ee0     timer.c.o
+ 0001:00007fa0       _get_uptime                0000000000108fa0     timer.c.o
+ 0001:00007fc0       _inc_ticks                 0000000000108fc0     timer.c.o
+ 0001:00007fe0       _outb                      0000000000108fe0     utils.c.o
+ 0001:00008000       _inb                       0000000000109000     utils.c.o
+ 0001:00008020       _kmemcpy                   0000000000109020     utils.c.o
+ 0001:00008080       _halt                      0000000000109080     utils.c.o
+ 0001:00008090       _inw                       0000000000109090     utils.c.o
+ 0001:000080b0       _outw                      00000000001090b0     utils.c.o
+ 0001:000080d0       _inl                       00000000001090d0     utils.c.o
+ 0001:000080f0       _outl                      00000000001090f0     utils.c.o
+ 0001:00008110       _queue_put                 0000000000109110     utils.c.o
+ 0001:000081a0       _queue_get                 00000000001091a0     utils.c.o
+ 0001:00008210       _kstrlen                   0000000000109210     utils.c.o
+ 0001:00008250       _kstrcpy                   0000000000109250     utils.c.o
+ 0001:00008290       _kstrequal                 0000000000109290     utils.c.o
+ 0001:00008330       _tolower                   0000000000109330     utils.c.o
+ 0001:00008380       _toupper                   0000000000109380     utils.c.o
+ 0001:000083d0       _kmemcmp                   00000000001093d0     utils.c.o
+ 0001:00008460       _kmemset                   0000000000109460     utils.c.o
  0002:0000b489       ??_C@_0DB@GKEJKEGE@Physical?5region?5descriptor?5cross@ 0000000000115489     disk.c.o
  0002:0000b4ba       ??_C@_0N@OKIMAHNF@article6?4txt?$AA@ 00000000001154ba     testsuite.c.o
  0002:0000b4c7       ??_C@_0N@GMBIHFHL@article5?4txt?$AA@ 00000000001154c7     testsuite.c.o
@@ -166,54 +172,65 @@
  0002:0000b4e1       ??_C@_0N@LKEBJGGG@article3?4txt?$AA@ 00000000001154e1     testsuite.c.o
  0002:0000b4ee       ??_C@_0N@HBBNEFMD@article2?4txt?$AA@ 00000000001154ee     testsuite.c.o
  0002:0000b4fb       ??_C@_0N@PHIJDHGN@article1?4txt?$AA@ 00000000001154fb     testsuite.c.o
- 0002:0000b508       ??_C@_08CKLMDEPE@No?5float?$AA@ 0000000000115508     kprintf.c.o
- 0002:0000b511       ??_C@_0BA@NGAGKICK@No?5disk?5devices?$AA@ 0000000000115511     disk.c.o
- 0002:0000b521       ??_C@_04MLLLIHIP@null?$AA@ 0000000000115521     kprintf.c.o
- 0002:0000b526       ??_C@_0BA@CFHAGCHK@Cannot?5continue?$AA@ 0000000000115526     disk.c.o
- 0002:0000b536       ??_C@_02HAOIJKIC@?$CFc?$AA@ 0000000000115536     syscall.c.o
- 0002:0000b539       ??_C@_02DIKIINKA@MZ?$AA@   0000000000115539     exec.c.o
- 0002:0000b53c       ??_C@_0BA@CPMPKNOF@Cannot?5read?5FAT?$AA@ 000000000011553c     disk.c.o
- 0002:0000b54c       ??_C@_0M@ELNEMMDP@No?5disk?5IRQ?$AA@ 000000000011554c     disk.c.o
- 0002:0000b558       ??_C@_09DLBABLKB@HELLO?4EXE?$AA@ 0000000000115558     kmain.c.o
- 0002:0000b562       ??_C@_0BE@COCNKOPF@No?5current?5request?$DP?$AA@ 0000000000115562     disk.c.o
- 0002:0000b576       ??_C@_0CP@POOGFCKN@kmalloc?5gave?5address?5that?5is?5not@ 0000000000115576     disk.c.o
- 0002:0000b5a5       ??_C@_01LFCBOECM@?4?$AA@   00000000001155a5     testsuite.c.o
- 0002:0000b5a7       ??_C@_0N@DLPBDLAF@Bad?5cluster?$CB?$AA@ 00000000001155a7     disk.c.o
- 0002:0000b5b4       ??_C@_06FHOFOIFO@ERROR?$CB?$AA@ 00000000001155b4     disk.c.o
- 0002:0000b5bb       ??_C@_04BBJKINFE@?5?$HM?$HM?5?$AA@ 00000000001155bb     testsuite.c.o
- 0002:0000b5c0       ??_C@_03LGOGDKEL@?5?$HM?5?$AA@ 00000000001155c0     testsuite.c.o
- 0002:0000b5c4       ??_C@_05CNDJFPDP@?$CF02x?5?$AA@ 00000000001155c4     testsuite.c.o
- 0002:0000b5ca       ??_C@_06JKJBCCFB@?$CF05d?3?5?$AA@ 00000000001155ca     testsuite.c.o
- 0002:0000b5d1       ??_C@_03NDEAONJP@?5?5?5?$AA@ 00000000001155d1     testsuite.c.o
- 0002:0000b5d3       ??_C@_01CLKCMJKC@?5?$AA@   00000000001155d3     testsuite.c.o
- 0002:0000b5d5       ??_C@_0CC@CHNKHNGC@General?5protection?5fault?5at?50x?$CFx@ 00000000001155d5     interrupts.c.o
- 0002:0000b5f7       ??_C@_0EM@DBGJOCKK@testsuite?3?5Line?5?$CFd?3?5Too?5much?5dat@ 00000000001155f7     testsuite.c.o
- 0002:0000b643       ??_C@_0CO@FBPOCJNB@testsuite?3?5Line?5?$CFd?3?5Did?5not?5reac@ 0000000000115643     testsuite.c.o
- 0002:0000b671       ??_C@_0BP@OHPEKLBB@testsuite?5line?5?$CFd?3?5Opening?5?$CFs?6?$AA@ 0000000000115671     testsuite.c.o
- 0002:0000b690       ??_C@_0CH@IBDFICMC@testsuite?3?5Line?5?$CFd?3?5Reached?5end?5@ 0000000000115690     testsuite.c.o
- 0002:0000b6b7       ??_C@_0BN@FLKBADPP@Kernel?5panic?3?5At?5eip?$DN?$CFp?3?5?$CFs?6?$AA@ 00000000001156b7     interrupts.c.o
- 0002:0000b6d4       ??_C@_0DB@GAIMHEGH@?$CF?912s?5?$CF6d?5?5?$CF02d?1?$CF02d?1?$CF04d?5?$CF02d?3?$CF@ 00000000001156d4     disk.c.o
- 0002:0000b705       ??_C@_0BG@DMELMCDE@Bad?5interrupt?5number?6?$AA@ 0000000000115705     interrupts.c.o
- 0002:0000b71b       ??_C@_0BA@IOAINKNM@Divide?5by?5zero?6?$AA@ 000000000011571b     interrupts.c.o
- 0002:0000b72b       ??_C@_0CJ@DGFCJGDO@BUG?3?5disk_read_sectors?5with?5no?5c@ 000000000011572b     disk.c.o
- 0002:0000b754       ??_C@_0DE@NBPFEMAA@BUG?3?5Cannot?5dispatch?5when?5a?5requ@ 0000000000115754     disk.c.o
- 0002:0000b788       ??_C@_0DI@BABJFDLN@Filename?5?5?5?5?5?5Size?5?5?5Modified?5?5?5@ 0000000000115788     disk.c.o
- 0002:0000b7c0       ??_C@_0BA@FPKEGBPF@Illegal?5Opcode?6?$AA@ 00000000001157c0     interrupts.c.o
- 0002:0000b7d0       ??_C@_0DH@NMANKBKG@?6testsuite?5line?5?$CFd?3?5Wrong?5conten@ 00000000001157d0     testsuite.c.o
- 0002:0000b807       ??_C@_0DP@OJIIFGNF@testsuite?5line?5?$CFd?3?5Incorrect?5dat@ 0000000000115807     testsuite.c.o
- 0002:0000b846       ??_C@_0BI@DBAKBLFP@Syscall?5test?$CB?5?$CFd?5?$CFd?5?$CFd?6?$AA@ 0000000000115846     syscall.c.o
- 0002:0000b85e       ??_C@_0CC@LPPGPMAO@Warning?3?5Unhandled?5interrupt?3?5?$CFd@ 000000000011585e     interrupts.c.o
- 0002:0000b880       ??_C@_0BB@EPMKEHHP@exec?5failed?3?5?$CFd?6?$AA@ 0000000000115880     exec.c.o
- 0002:0000b891       ??_C@_0BC@DJGPPIFI@?6ERROR?5W?5LEN?3?5?$CFd?6?$AA@ 0000000000115891     fs.c.o
- 0002:0000b8a3       ??_C@_07MIFMOGJB@All?5OK?6?$AA@ 00000000001158a3     testsuite.c.o
- 0002:0000b8ab       ??_C@_0CH@PINMIPKD@testsuite?5line?5?$CFd?3?5Beginning?5rea@ 00000000001158ab     testsuite.c.o
- 0002:0000b8d2       ??_C@_0FB@OIHDHIAM@?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9@ 00000000001158d2     disk.c.o
- 0002:0000b923       ??_C@_0CI@NGJOCFDN@testsuite?3?5Line?5?$CFd?3?5Error?5in?5rea@ 0000000000115923     testsuite.c.o
- 0002:0000b94b       ??_C@_0DB@NDNPACEA@testsuite?5line?5?$CFd?3?5Could?5not?5ope@ 000000000011594b     testsuite.c.o
- 0002:0000b97c       ??_C@_0BE@OMMANMHM@Too?5many?5handlers?$CB?6?$AA@ 000000000011597c     interrupts.c.o
- 0002:0000b990       ??_C@_0BJ@EAGEFHPO@?6ERROR?3?5could?5not?5find?$CB?6?$AA@ 0000000000115990     fs.c.o
- 0002:0000b9a9       ??_C@_02PHMGELLB@?6?6?$AA@ 00000000001159a9     testsuite.c.o
- 0002:0000b9aa       ??_C@_01EEMJAFIK@?6?$AA@   00000000001159aa     testsuite.c.o
+ 0002:0000b508       ??_C@_07KONDCJBL@present?$AA@ 0000000000115508     interrupts.c.o
+ 0002:0000b510       ??_C@_06LBPOAOHH@absent?$AA@ 0000000000115510     interrupts.c.o
+ 0002:0000b517       ??_C@_08CKLMDEPE@No?5float?$AA@ 0000000000115517     kprintf.c.o
+ 0002:0000b520       ??_C@_0BA@NGAGKICK@No?5disk?5devices?$AA@ 0000000000115520     disk.c.o
+ 0002:0000b530       ??_C@_04CCHAHKJA@user?$AA@ 0000000000115530     interrupts.c.o
+ 0002:0000b535       ??_C@_0M@KPIOFOFC@instruction?$AA@ 0000000000115535     interrupts.c.o
+ 0002:0000b541       ??_C@_04MLLLIHIP@null?$AA@ 0000000000115541     kprintf.c.o
+ 0002:0000b546       ??_C@_06GMKELIII@kernel?$AA@ 0000000000115546     interrupts.c.o
+ 0002:0000b54d       ??_C@_0BA@CFHAGCHK@Cannot?5continue?$AA@ 000000000011554d     disk.c.o
+ 0002:0000b55d       ??_C@_05NGFEDHGN@write?$AA@ 000000000011555d     interrupts.c.o
+ 0002:0000b563       ??_C@_07MALOAKCI@invalid?$AA@ 0000000000115563     interrupts.c.o
+ 0002:0000b565       ??_C@_05HDPIMK@valid?$AA@  0000000000115565     interrupts.c.o
+ 0002:0000b56b       ??_C@_04POLDLDMI@read?$AA@ 000000000011556b     interrupts.c.o
+ 0002:0000b570       ??_C@_02HAOIJKIC@?$CFc?$AA@ 0000000000115570     syscall.c.o
+ 0002:0000b573       ??_C@_04PJOLNDGD@data?$AA@ 0000000000115573     interrupts.c.o
+ 0002:0000b578       ??_C@_02DIKIINKA@MZ?$AA@   0000000000115578     exec.c.o
+ 0002:0000b57b       ??_C@_0BA@CPMPKNOF@Cannot?5read?5FAT?$AA@ 000000000011557b     disk.c.o
+ 0002:0000b58b       ??_C@_0M@ELNEMMDP@No?5disk?5IRQ?$AA@ 000000000011558b     disk.c.o
+ 0002:0000b597       ??_C@_09DLBABLKB@HELLO?4EXE?$AA@ 0000000000115597     kmain.c.o
+ 0002:0000b5a1       ??_C@_0BE@COCNKOPF@No?5current?5request?$DP?$AA@ 00000000001155a1     disk.c.o
+ 0002:0000b5b5       ??_C@_0CP@POOGFCKN@kmalloc?5gave?5address?5that?5is?5not@ 00000000001155b5     disk.c.o
+ 0002:0000b5e4       ??_C@_01LFCBOECM@?4?$AA@   00000000001155e4     testsuite.c.o
+ 0002:0000b5e6       ??_C@_0N@DLPBDLAF@Bad?5cluster?$CB?$AA@ 00000000001155e6     disk.c.o
+ 0002:0000b5f3       ??_C@_06FHOFOIFO@ERROR?$CB?$AA@ 00000000001155f3     disk.c.o
+ 0002:0000b5fa       ??_C@_04BBJKINFE@?5?$HM?$HM?5?$AA@ 00000000001155fa     testsuite.c.o
+ 0002:0000b5ff       ??_C@_03LGOGDKEL@?5?$HM?5?$AA@ 00000000001155ff     testsuite.c.o
+ 0002:0000b603       ??_C@_05CNDJFPDP@?$CF02x?5?$AA@ 0000000000115603     testsuite.c.o
+ 0002:0000b609       ??_C@_06JKJBCCFB@?$CF05d?3?5?$AA@ 0000000000115609     testsuite.c.o
+ 0002:0000b610       ??_C@_03NDEAONJP@?5?5?5?$AA@ 0000000000115610     testsuite.c.o
+ 0002:0000b612       ??_C@_01CLKCMJKC@?5?$AA@   0000000000115612     testsuite.c.o
+ 0002:0000b614       ??_C@_0CC@CHNKHNGC@General?5protection?5fault?5at?50x?$CFx@ 0000000000115614     interrupts.c.o
+ 0002:0000b636       ??_C@_0EM@DBGJOCKK@testsuite?3?5Line?5?$CFd?3?5Too?5much?5dat@ 0000000000115636     testsuite.c.o
+ 0002:0000b682       ??_C@_0CO@FBPOCJNB@testsuite?3?5Line?5?$CFd?3?5Did?5not?5reac@ 0000000000115682     testsuite.c.o
+ 0002:0000b6b0       ??_C@_0BP@OHPEKLBB@testsuite?5line?5?$CFd?3?5Opening?5?$CFs?6?$AA@ 00000000001156b0     testsuite.c.o
+ 0002:0000b6cf       ??_C@_0CH@IBDFICMC@testsuite?3?5Line?5?$CFd?3?5Reached?5end?5@ 00000000001156cf     testsuite.c.o
+ 0002:0000b6f6       ??_C@_0BN@FLKBADPP@Kernel?5panic?3?5At?5eip?$DN?$CFp?3?5?$CFs?6?$AA@ 00000000001156f6     interrupts.c.o
+ 0002:0000b713       ??_C@_0DB@GAIMHEGH@?$CF?912s?5?$CF6d?5?5?$CF02d?1?$CF02d?1?$CF04d?5?$CF02d?3?$CF@ 0000000000115713     disk.c.o
+ 0002:0000b744       ??_C@_0BG@DMELMCDE@Bad?5interrupt?5number?6?$AA@ 0000000000115744     interrupts.c.o
+ 0002:0000b75a       ??_C@_0BA@IOAINKNM@Divide?5by?5zero?6?$AA@ 000000000011575a     interrupts.c.o
+ 0002:0000b76a       ??_C@_0CJ@DGFCJGDO@BUG?3?5disk_read_sectors?5with?5no?5c@ 000000000011576a     disk.c.o
+ 0002:0000b793       ??_C@_0DE@NBPFEMAA@BUG?3?5Cannot?5dispatch?5when?5a?5requ@ 0000000000115793     disk.c.o
+ 0002:0000b7c7       ??_C@_0DI@BABJFDLN@Filename?5?5?5?5?5?5Size?5?5?5Modified?5?5?5@ 00000000001157c7     disk.c.o
+ 0002:0000b7ff       ??_C@_0BA@FPKEGBPF@Illegal?5Opcode?6?$AA@ 00000000001157ff     interrupts.c.o
+ 0002:0000b80f       ??_C@_0DH@NMANKBKG@?6testsuite?5line?5?$CFd?3?5Wrong?5conten@ 000000000011580f     testsuite.c.o
+ 0002:0000b846       ??_C@_0DP@OJIIFGNF@testsuite?5line?5?$CFd?3?5Incorrect?5dat@ 0000000000115846     testsuite.c.o
+ 0002:0000b885       ??_C@_0BI@DBAKBLFP@Syscall?5test?$CB?5?$CFd?5?$CFd?5?$CFd?6?$AA@ 0000000000115885     syscall.c.o
+ 0002:0000b89d       ??_C@_0CC@LPPGPMAO@Warning?3?5Unhandled?5interrupt?3?5?$CFd@ 000000000011589d     interrupts.c.o
+ 0002:0000b8bf       ??_C@_0BB@EPMKEHHP@exec?5failed?3?5?$CFd?6?$AA@ 00000000001158bf     exec.c.o
+ 0002:0000b8d0       ??_C@_0BC@DJGPPIFI@?6ERROR?5W?5LEN?3?5?$CFd?6?$AA@ 00000000001158d0     fs.c.o
+ 0002:0000b8e2       ??_C@_07MIFMOGJB@All?5OK?6?$AA@ 00000000001158e2     testsuite.c.o
+ 0002:0000b8ea       ??_C@_0CH@PINMIPKD@testsuite?5line?5?$CFd?3?5Beginning?5rea@ 00000000001158ea     testsuite.c.o
+ 0002:0000b911       ??_C@_0FB@OIHDHIAM@?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9@ 0000000000115911     disk.c.o
+ 0002:0000b962       ??_C@_0DJ@MPHMAFDD@?6Page?5fault?5eip?$DN0x?$CFx?5addr?$DN0x?$CFx?5c@ 0000000000115962     interrupts.c.o
+ 0002:0000b99b       ??_C@_0CI@NGJOCFDN@testsuite?3?5Line?5?$CFd?3?5Error?5in?5rea@ 000000000011599b     testsuite.c.o
+ 0002:0000b9c3       ??_C@_0DB@NDNPACEA@testsuite?5line?5?$CFd?3?5Could?5not?5ope@ 00000000001159c3     testsuite.c.o
+ 0002:0000b9f4       ??_C@_0BE@OMMANMHM@Too?5many?5handlers?$CB?6?$AA@ 00000000001159f4     interrupts.c.o
+ 0002:0000ba08       ??_C@_0BJ@EAGEFHPO@?6ERROR?3?5could?5not?5find?$CB?6?$AA@ 0000000000115a08     fs.c.o
+ 0002:0000ba21       ??_C@_02PHMGELLB@?6?6?$AA@ 0000000000115a21     testsuite.c.o
+ 0002:0000ba22       ??_C@_01EEMJAFIK@?6?$AA@   0000000000115a22     testsuite.c.o
  0003:00000000       _lowlevel_addresses        0000000000116000     asmstubs.c.o
  0003:000000f0       _efiBootGUID               00000000001160f0     disk.c.o
  0003:00000100       _windowsDataGUID           0000000000116100     disk.c.o
@@ -224,10 +241,10 @@
  0003:00020308       _vbr                       0000000000136308     disk.c.o
  0003:00020534       _file_table                0000000000136534     fs.c.o
  0003:00020ff8       __fltused                  0000000000136ff8     kprintf.c.o
- 0003:00020ffc       _freeList                  0000000000136ffc     memory.c.o
- 0003:0002776c       _clock_ticks               000000000013d76c     timer.c.o
+ 0003:00021000       _freeList                  0000000000137000     memory.c.o
+ 0003:00029720       _clock_ticks               000000000013f720     timer.c.o
 
- entry point at         0001:00003ab0
+ entry point at         0001:00003bd0
 
  Static symbols
 
@@ -242,29 +259,30 @@
  0001:000018f0       _len                       00000000001028f0     disk.c.o
  0001:000025d0       _file_open_part_2          00000000001035d0     fs.c.o
  0001:00003584       reset_cs                   0000000000104584     interrupts.c.o
- 0001:00005ed0       _real_va_arg               0000000000106ed0     kprintf.c.o
- 0001:00005f00       _stbsp__strlen_limited     0000000000106f00     kprintf.c.o
- 0001:00006020       _mod64                     0000000000107020     kprintf.c.o
- 0001:00006110       _div64                     0000000000107110     kprintf.c.o
- 0001:00006230       _mod                       0000000000107230     kprintf.c.o
- 0001:000062b0       _div                       00000000001072b0     kprintf.c.o
- 0001:00006350       _stbsp__lead_sign          0000000000107350     kprintf.c.o
- 0001:00006440       _real_va_start             0000000000107440     kprintf.c.o
- 0001:00006560       _stbsp__count_clamp_callback 0000000000107560     kprintf.c.o
- 0001:00006590       _stbsp__clamp_callback     0000000000107590     kprintf.c.o
- 0001:000067b0       _callback                  00000000001077b0     kprintf.c.o
- 0001:00006930       _setPrev                   0000000000107930     memory.c.o
- 0001:00006990       _setNext                   0000000000107990     memory.c.o
- 0001:00006ab0       _getNext                   0000000000107ab0     memory.c.o
- 0001:00006b90       _getPrev                   0000000000107b90     memory.c.o
- 0001:00007430       _mystrlen                  0000000000108430     testsuite.c.o
- 0001:00007470       _f1                        0000000000108470     testsuite.c.o
- 0001:00007520       _freeze                    0000000000108520     testsuite.c.o
- 0001:00007530       _doNextRead                0000000000108530     testsuite.c.o
- 0001:00007630       _f2                        0000000000108630     testsuite.c.o
- 0001:000078a0       _compareFiles              00000000001088a0     testsuite.c.o
- 0001:000079e0       _dumpComparison            00000000001089e0     testsuite.c.o
- 0001:00007ac0       _dumpq                     0000000000108ac0     testsuite.c.o
+ 0001:00006000       _real_va_arg               0000000000107000     kprintf.c.o
+ 0001:00006030       _stbsp__strlen_limited     0000000000107030     kprintf.c.o
+ 0001:00006150       _mod64                     0000000000107150     kprintf.c.o
+ 0001:00006240       _div64                     0000000000107240     kprintf.c.o
+ 0001:00006360       _mod                       0000000000107360     kprintf.c.o
+ 0001:000063e0       _div                       00000000001073e0     kprintf.c.o
+ 0001:00006480       _stbsp__lead_sign          0000000000107480     kprintf.c.o
+ 0001:00006570       _real_va_start             0000000000107570     kprintf.c.o
+ 0001:00006690       _stbsp__count_clamp_callback 0000000000107690     kprintf.c.o
+ 0001:000066c0       _stbsp__clamp_callback     00000000001076c0     kprintf.c.o
+ 0001:000068e0       _callback                  00000000001078e0     kprintf.c.o
+ 0001:00006a60       _setPrev                   0000000000107a60     memory.c.o
+ 0001:00006ac0       _setNext                   0000000000107ac0     memory.c.o
+ 0001:00006be0       _getNext                   0000000000107be0     memory.c.o
+ 0001:00006cc0       _getPrev                   0000000000107cc0     memory.c.o
+ 0001:0000722c       flushqueue0                000000000010822c     memory.c.o
+ 0001:00007720       _mystrlen                  0000000000108720     testsuite.c.o
+ 0001:00007760       _f1                        0000000000108760     testsuite.c.o
+ 0001:00007810       _freeze                    0000000000108810     testsuite.c.o
+ 0001:00007820       _doNextRead                0000000000108820     testsuite.c.o
+ 0001:00007920       _f2                        0000000000108920     testsuite.c.o
+ 0001:00007b90       _compareFiles              0000000000108b90     testsuite.c.o
+ 0001:00007cd0       _dumpComparison            0000000000108cd0     testsuite.c.o
+ 0001:00007db0       _dumpq                     0000000000108db0     testsuite.c.o
  0002:00000054       _font_data                 000000000010a054     console.c.o
  0002:000052fc       _article1                  000000000010f2fc     testsuite.c.o
  0002:000086c9       _article2                  00000000001126c9     testsuite.c.o
@@ -312,14 +330,15 @@
  0003:00020ae4       _handlers                  0000000000136ae4     interrupts.c.o
  0003:00020df4       _idt                       0000000000136df4     interrupts.c.o
  0003:00020f7c       _bootInfo                  0000000000136f7c     kmain.c.o
- 0003:0002104c       _lengths                   000000000013704c     testsuite.c.o
- 0003:00021064       _fds                       0000000000137064     testsuite.c.o
- 0003:0002107c       _readsLeft                 000000000013707c     testsuite.c.o
- 0003:00021080       _count                     0000000000137080     testsuite.c.o
- 0003:00021098       _article1_                 0000000000137098     testsuite.c.o
- 0003:0002477a       _article2_                 000000000013a77a     testsuite.c.o
- 0003:00025f1c       _article3_                 000000000013bf1c     testsuite.c.o
- 0003:00026782       _article4_                 000000000013c782     testsuite.c.o
- 0003:00026f84       _article5_                 000000000013cf84     testsuite.c.o
- 0003:0002733a       _article6_                 000000000013d33a     testsuite.c.o
- 0003:00027754       _atEOF                     000000000013d754     testsuite.c.o
+ 0003:00022000       _kernel_page_table         0000000000138000     memory.c.o
+ 0003:00023000       _lengths                   0000000000139000     testsuite.c.o
+ 0003:00023018       _fds                       0000000000139018     testsuite.c.o
+ 0003:00023030       _readsLeft                 0000000000139030     testsuite.c.o
+ 0003:00023034       _count                     0000000000139034     testsuite.c.o
+ 0003:0002304c       _article1_                 000000000013904c     testsuite.c.o
+ 0003:0002672e       _article2_                 000000000013c72e     testsuite.c.o
+ 0003:00027ed0       _article3_                 000000000013ded0     testsuite.c.o
+ 0003:00028736       _article4_                 000000000013e736     testsuite.c.o
+ 0003:00028f38       _article5_                 000000000013ef38     testsuite.c.o
+ 0003:000292ee       _article6_                 000000000013f2ee     testsuite.c.o
+ 0003:00029708       _atEOF                     000000000013f708     testsuite.c.o

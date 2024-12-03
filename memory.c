@@ -163,3 +163,81 @@ void kfree(void* v){
         }
     }
 }
+
+static struct PageTable kernel_page_table;
+
+#define PAGE_DEVICE_MEMORY ( (1<<3) | (1<<4) )
+#define PAGE_PRESENT 1
+#define PAGE_MUST_BE_ONE (1<<7)
+#define PAGE_USER_ACCESS (1<<2)
+#define PAGE_WRITEABLE (1<<1)
+#define MEGABYTE 1024*1024
+
+void pageInit(struct MultibootInfo* info)
+{
+    for(int i = 0; i < 1024; i++){
+        unsigned entry = (i << 22);
+        entry |= PAGE_MUST_BE_ONE;
+
+        unsigned address = i*MEGABYTE*4;
+
+        if (address >= 0x00000000 && address < 0x00400000) {
+            entry |= PAGE_PRESENT | PAGE_WRITEABLE;
+        } 
+        else if (address >= 0x00400000 && address < 0x00800000) {
+            entry |= PAGE_PRESENT | PAGE_WRITEABLE | PAGE_USER_ACCESS;
+        }
+        else if (address >= 0x00800000 && address < 0x08000000) {
+            entry |= PAGE_PRESENT | PAGE_WRITEABLE;
+        }
+        else if (address >= 0x08000000 && address < 0x80000000) {
+            entry = 0;
+        } 
+        else if (address >= 0x80000000 && address <= 0xFFFFFFFF) {
+            entry |= PAGE_PRESENT | PAGE_WRITEABLE | PAGE_DEVICE_MEMORY;
+        }
+        kernel_page_table.table[i] = entry;
+    }
+    set_page_table(&kernel_page_table);
+    enable_paging();
+}
+
+void set_page_table(struct PageTable* p){
+    asm volatile( "mov %%eax,%%cr3"
+        :
+        : "a"( (unsigned)(p->table) )
+        : "memory" );
+}
+struct PageTable* get_page_table(){
+    unsigned p;
+    asm volatile( "mov %%cr3,%%eax"
+        : "=a"(p)
+    );
+    return (struct PageTable*)p;
+}
+
+void enable_paging(){
+    asm volatile(
+        "mov %%cr4,%%eax\n"     //copy cr4 to eax
+        "orl $16,%%eax\n"       //turn on bit 4
+        "mov %%eax,%%cr4\n"     //copy eax back to cr4
+        "mov %%cr0,%%eax\n"     //copy cr0 to eax
+        "orl $0x80010000,%%eax\n"   //turn on bits 16 and 31
+        "mov %%eax,%%cr0\n"     //copy eax back to cr0
+        "jmp flushqueue%=\n"    //intel says we need this
+        "flushqueue%=:\n"
+        "nop"                   //no-op
+        :                       //no outputs
+        :                       //no inputs
+        : "eax","memory"        //clobbers
+    );
+}
+
+unsigned get_faulting_address(){
+    unsigned addr;
+    asm volatile(
+        "mov %%cr2,%%eax\n"
+        : "=a"(addr)
+    );
+    return addr;
+}

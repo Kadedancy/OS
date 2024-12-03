@@ -3,16 +3,17 @@ import subprocess
 import os
 import sys
 
-inifile=configparser.ConfigParser(interpolation=None)
-inifile.read("config.ini")
-conf=inifile["config"]
 
-cc=conf["compiler"]
-link=conf["linker"]
-qemu=conf["qemu"]
-python=conf["python"]
-userlinker=conf["userlinker"]
-ar=conf["ar"]
+inifile  =  configparser.ConfigParser(interpolation = None)
+inifile.read("config.ini")
+conf = inifile["config"]
+
+cc = conf["compiler"]
+link = conf["linker"]
+qemu = conf["qemu"]
+python = conf["python"]
+userlinker = conf["userlinker"]
+ar = conf["ar"]
 
 cflags=[
     "-target", "i686-pc-win32", #target platform=Windows 32 bit
@@ -39,7 +40,7 @@ linkflags=[
     "/map:kernel.syms"      #kernel symbols
 ]
 
-userlinkflags =[
+userlinkflags=[
     "/base:0x400000",       #where file gets loaded
     "/machine:x86",         #32 bit
     "/nodefaultlib",        #no standard libraries
@@ -51,7 +52,6 @@ userlinkflags =[
 def run(*args):
     print(args)
     subprocess.check_call(*args)
-    
 
 objectfiles=[]
 for filename in os.listdir("."):
@@ -61,7 +61,6 @@ for filename in os.listdir("."):
             [cc] + cflags + ["-o",obj,filename]
         )
         objectfiles.append(obj)
-
 run( [link] + linkflags + objectfiles )
 
 libfiles=[]
@@ -94,7 +93,7 @@ run( [
         "cp", "user/hello.exe", "HELLO.EXE"
 ])
 
-temp = [ qemu,
+run( [ qemu,
 
     #virtual hard drive
     "-drive","format=raw,media=disk,file=hd.img,id=disk0",
@@ -104,6 +103,4 @@ temp = [ qemu,
 
     #escape character for controlling qemu
     "-echr","96"
-]
-print(" ".join(temp))
-run(temp)
+])

@@ -1,9 +1,8 @@
-#include "../syscalldefs.h"
-
 extern void printf(const char* fmt, ... );
 int main(){
-    printf("Hello from userland!\n");
-    while(1){
-    }
-    return 0;
+    printf("About to crash...\n");
+    char* p = (char*) 0x1234;
+    *p = 42;
+    printf("We should not get here\n");
+    while(1){}
 }

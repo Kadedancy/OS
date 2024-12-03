@@ -1,6 +1,7 @@
 #include "interrupts.h"
 #include "console.h"
 #include "syscall.h"
+#include "memory.h"
 
 static struct IDTEntry idt[NUM_INTERRUPTS];
 extern void* lowlevel_addresses[];
@@ -207,6 +208,23 @@ void timer40Handler(struct InterruptContext* ctx){
     inc_ticks();
 }
 
+void page_fault_handler( struct InterruptContext* ctx ){
+    kprintf("\nPage fault eip=0x%x addr=0x%x code=%x (%s %s %s %s %s)\n",
+        ctx->eip,
+        get_faulting_address(),
+        ctx->errorcode,
+        (ctx->errorcode & 1) ? "present":"absent",
+        (ctx->errorcode & 2) ? "write":"read",
+        (ctx->errorcode & 4) ? "user":"kernel",
+        (ctx->errorcode & 8) ? "invalid":"valid",
+        (ctx->errorcode & 16) ? "instruction":"data"
+    );
+    while(1){
+        asm volatile("hlt");
+    }
+}
+
+
 void interrupt_init(){
     gdt_init();
 
@@ -247,9 +265,9 @@ void interrupt_init(){
     register_interrupt_handler(0, divideByZero);
     register_interrupt_handler(6, illegalOpcode);
     register_interrupt_handler(13, generalFault);
-    //register_interrupt_handler(32, timer0Handler);
     register_interrupt_handler(32, timer40Handler);
-    register_interrupt_handler( 48, syscall_handler );
+    register_interrupt_handler(48, syscall_handler);
+    register_interrupt_handler(14,page_fault_handler);
 }
 
 

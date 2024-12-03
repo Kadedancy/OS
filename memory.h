@@ -34,3 +34,13 @@ Header* getBuddy(Header* h);                        // Get the buddy of a given 
 void mergeBlocks(Header* h1, Header* h2);          // Merge two adjacent free blocks
 void printFreeList();                               // Debug function to print the free list
 u32 getTotalFreeMemory();                           // Get total free memory available
+
+struct PageTable{
+    unsigned table[1024] __attribute__((aligned(4096)));
+};
+
+void pageInit(struct MultibootInfo* info);
+void set_page_table(struct PageTable* p);
+struct PageTable* get_page_table();
+void enable_paging();
+unsigned get_faulting_address();

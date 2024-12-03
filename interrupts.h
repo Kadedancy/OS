@@ -3,6 +3,7 @@
 #include "utils.h"
 #include "kprintf.h"
 #include "timer.h"
+#include "errno.h"
 
 
 #define SEGMENT_PRESENT 0x80
@@ -76,6 +77,7 @@ void divideByZero(struct InterruptContext* ctx);
 void register_interrupt_handler(unsigned interrupt,InterruptHandler func);
 void interrupt_enable();
 void timer0Handler(struct InterruptContext* ctx);
+void page_fault_handler( struct InterruptContext* ctx );
 void interrupt_init();
 
 

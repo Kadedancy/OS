@@ -30,6 +30,7 @@ void kmain(struct MultibootInfo* mbi){
     interrupt_init();
     timer_init();
     memory_init();
+    pageInit(&bootInfo);
     disk_init();
     interrupt_enable();
     disk_read_metadata(kmain2);
